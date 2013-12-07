@@ -4,6 +4,20 @@
 #include "../xhash.h"
 
 void
+test_iteration(xhash *x, int ec)
+{
+  struct xh_iterator it;
+  int c = 0;
+
+  it = xh_begin(x);
+  while (! xh_isend(&it)) {
+    xh_next(x, &it);
+    ++c;
+  }
+  assert(c == ec);
+}
+
+void
 test()
 {
   struct xh_entry *e;
@@ -20,6 +34,8 @@ test()
   assert(e && e->val == 2);
   e = xh_get(x, "c");
   assert(e && e->val == 3);
+
+  test_iteration(x, 3);
 
   xh_destory(x);
 }
