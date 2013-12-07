@@ -32,7 +32,7 @@ xh_new()
 
   x = (struct xhash *)malloc(sizeof(struct xhash));
   x->size = XHASH_INIT_SIZE;
-  x->buckets = (struct xh_entry **)calloc(XHASH_INIT_SIZE, sizeof(struct xh_entry *));
+  x->buckets = (struct xh_entry **)calloc(XHASH_INIT_SIZE + 1, sizeof(struct xh_entry *));
   return x;
 }
 
@@ -56,9 +56,9 @@ xh_get(struct xhash *x, const char *key)
   idx = xh_hash(key) % x->size;
   for (e = x->buckets[idx]; e; e = e->next) {
     if (strcmp(key, e->key) == 0)
-      return e;
+      break;
   }
-  return NULL;
+  return e;
 }
 
 static inline struct xh_entry *
@@ -110,40 +110,30 @@ xh_begin(struct xhash *x)
   struct xh_iterator it;
   int bidx;
 
-  it.e = NULL;
-  it.bidx = -1;
-
   for (bidx = 0; bidx < x->size; ++bidx) {
-    if (x->buckets[bidx]) {
-      it.e = x->buckets[bidx];
-      it.bidx = bidx;
+    if (x->buckets[bidx])
       break;
-    }
   }
+  it.e = x->buckets[bidx];
+  it.bidx = bidx;
   return it;
 }
 
 static inline void
 xh_next(struct xhash *x, struct xh_iterator *it)
 {
-  struct xh_entry *e;
   int bidx;
 
-  e = it->e;
-
-  if (e->next) {
-    it->e = e->next;
+  if (it->e->next) {
+    it->e = it->e->next;
     return;
   }
   for (bidx = it->bidx + 1; bidx < x->size; ++bidx) {
-    if (x->buckets[bidx]) {
-      it.e = x->buckets[bidx];
-      it.bidx = bidx;
-      return;
-    }
+    if (x->buckets[bidx])
+      break;
   }
-  it->e = NULL;
-  it->bidx = -1;
+  it.e = x->buckets[bidx];
+  it.bidx = bidx;
   return;
 }
 
