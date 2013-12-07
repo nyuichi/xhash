@@ -1,4 +1,4 @@
-# xhash - super tiny hash table [![Build Status](https://travis-ci.org/wasaibz/xhash.png)
+# xhash - super tiny hash table [![Build Status](https://travis-ci.org/wasaibz/xhash.png)](https://travis-ci.org/wasabiz/xhash)
 
 - written in pure C99
 - all components are in single header file
