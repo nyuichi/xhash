@@ -99,4 +99,52 @@ xh_destory(struct xhash *x)
   free(x);
 }
 
+struct xh_iterator {
+  struct xh_entry *e;
+  int bidx;
+};
+
+static inline struct xh_iterator
+xh_begin(struct xhash *x)
+{
+  struct xh_iterator it;
+  int bidx;
+
+  it.e = NULL;
+  it.bidx = -1;
+
+  for (bidx = 0; bidx < x->size; ++bidx) {
+    if (x->buckets[bidx]) {
+      it.e = x->buckets[bidx];
+      it.bidx = bidx;
+      break;
+    }
+  }
+  return it;
+}
+
+static inline void
+xh_next(struct xhash *x, struct xh_iterator *it)
+{
+  struct xh_entry *e;
+  int bidx;
+
+  e = it->e;
+
+  if (e->next) {
+    it->e = e->next;
+    return;
+  }
+  for (bidx = it->bidx + 1; bidx < x->size; ++bidx) {
+    if (x->buckets[bidx]) {
+      it.e = x->buckets[bidx];
+      it.bidx = bidx;
+      return;
+    }
+  }
+  it->e = NULL;
+  it->bidx = -1;
+  return;
+}
+
 #endif
