@@ -137,4 +137,10 @@ xh_next(struct xhash *x, struct xh_iterator *it)
   return;
 }
 
+static inline bool
+xh_isend(struct xh_iterator *it)
+{
+  return it->e == NULL;
+}
+
 #endif
