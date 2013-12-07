@@ -23,6 +23,8 @@ struct xhash {
   size_t size;
 };
 
+typedef struct xhash xhash;
+
 static inline struct xhash *
 xh_new()
 {
