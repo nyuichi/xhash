@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 /* simple string to int hash table */
 
@@ -132,8 +133,8 @@ xh_next(struct xhash *x, struct xh_iterator *it)
     if (x->buckets[bidx])
       break;
   }
-  it.e = x->buckets[bidx];
-  it.bidx = bidx;
+  it->e = x->buckets[bidx];
+  it->bidx = bidx;
   return;
 }
 
