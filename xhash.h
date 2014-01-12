@@ -100,15 +100,15 @@ xh_destory(struct xhash *x)
   free(x);
 }
 
-struct xh_iterator {
+struct xh_iter {
   struct xh_entry *e;
   int bidx;
 };
 
-static inline struct xh_iterator
+static inline struct xh_iter
 xh_begin(struct xhash *x)
 {
-  struct xh_iterator it;
+  struct xh_iter it;
   int bidx;
 
   for (bidx = 0; bidx < x->size; ++bidx) {
@@ -121,7 +121,7 @@ xh_begin(struct xhash *x)
 }
 
 static inline void
-xh_next(struct xhash *x, struct xh_iterator *it)
+xh_next(struct xhash *x, struct xh_iter *it)
 {
   int bidx;
 
@@ -139,7 +139,7 @@ xh_next(struct xhash *x, struct xh_iterator *it)
 }
 
 static inline bool
-xh_isend(struct xh_iterator *it)
+xh_isend(struct xh_iter *it)
 {
   return it->e == NULL;
 }
