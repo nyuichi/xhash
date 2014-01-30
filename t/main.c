@@ -37,7 +37,7 @@ test()
 
   test_iteration(x, 3);
 
-  xh_destory(x);
+  xh_destroy(x);
 }
 
 int

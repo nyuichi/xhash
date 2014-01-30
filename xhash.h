@@ -87,7 +87,7 @@ xh_put(struct xhash *x, const char *key, int val)
 }
 
 static inline void
-xh_destory(struct xhash *x)
+xh_destroy(struct xhash *x)
 {
   int i;
   struct xh_entry *e, *d;
