@@ -5,6 +5,10 @@
  * Copyright (c) 2013 by Yuichi Nishiwaki <yuichi.nishiwaki@gmail.com>
  */
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -143,5 +147,9 @@ xh_isend(struct xh_iter *it)
 {
   return it->e == NULL;
 }
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
