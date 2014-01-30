@@ -67,7 +67,7 @@ xh_get(struct xhash *x, const char *key)
 static inline struct xh_entry *
 xh_put(struct xhash *x, const char *key, int val)
 {
-  int idx;
+  unsigned idx;
   struct xh_entry *e;
 
   if ((e = xh_get(x, key))) {
