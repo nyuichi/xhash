@@ -39,10 +39,10 @@ xh_new()
   return x;
 }
 
-static int
+static unsigned
 xh_hash(const char *str)
 {
-  int hash = 0;
+  unsigned hash = 0;
 
   while (*str) {
     hash = hash * 31 + *str++;
@@ -53,7 +53,7 @@ xh_hash(const char *str)
 static inline struct xh_entry *
 xh_get(struct xhash *x, const char *key)
 {
-  int idx;
+  unsigned idx;
   struct xh_entry *e;
 
   idx = xh_hash(key) % x->size;
