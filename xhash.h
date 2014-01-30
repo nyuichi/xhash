@@ -17,18 +17,16 @@ extern "C" {
 
 #define XHASH_INIT_SIZE 11
 
-struct xh_entry {
+typedef struct xh_entry {
   struct xh_entry *next;
   const char *key;
   int val;
-};
+} xh_entry;
 
-struct xhash {
+typedef struct xhash {
   struct xh_entry **buckets;
-  size_t size;
-};
-
-typedef struct xhash xhash;
+  int size;
+} xhash;
 
 static inline struct xhash *
 xh_new()
@@ -104,10 +102,10 @@ xh_destroy(struct xhash *x)
   free(x);
 }
 
-struct xh_iter {
+typedef struct xh_iter {
   struct xh_entry *e;
   int bidx;
-};
+} xh_iter;
 
 static inline struct xh_iter
 xh_begin(struct xhash *x)
