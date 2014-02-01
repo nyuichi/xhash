@@ -15,6 +15,20 @@ extern "C" {
 
 /* simple string to int hash table */
 
+char *
+strdup__(const char *s)
+{
+  size_t len;
+  char *r;
+
+  len = strlen(s);
+  r = malloc(len + 1);
+  memcpy(r, s, len);
+  r[len] = '\0';
+
+  return r;
+}
+
 #define XHASH_INIT_SIZE 11
 
 typedef struct xh_entry {
@@ -78,7 +92,7 @@ xh_put(struct xhash *x, const char *key, int val)
   idx = xh_hash(key) % x->size;
   e = (struct xh_entry *)malloc(sizeof(struct xh_entry));
   e->next = x->buckets[idx];
-  e->key = strdup(key);
+  e->key = strdup__(key);
   e->val = val;
 
   return x->buckets[idx] = e;
