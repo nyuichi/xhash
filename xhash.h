@@ -121,19 +121,17 @@ typedef struct xh_iter {
   int bidx;
 } xh_iter;
 
-static inline struct xh_iter
-xh_begin(struct xhash *x)
+static inline void
+xh_begin(struct xhash *x, struct xh_iter *it)
 {
-  struct xh_iter it;
   int bidx;
 
   for (bidx = 0; bidx < x->size; ++bidx) {
     if (x->buckets[bidx])
       break;
   }
-  it.e = x->buckets[bidx];
-  it.bidx = bidx;
-  return it;
+  it->e = x->buckets[bidx];
+  it->bidx = bidx;
 }
 
 static inline void
