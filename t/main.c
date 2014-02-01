@@ -9,9 +9,7 @@ test_iteration(xhash *x, int ec)
   struct xh_iter it;
   int c = 0;
 
-  xh_begin(x, &it);
-  while (! xh_isend(&it)) {
-    xh_next(&it);
+  for (xh_begin(x, &it); ! xh_isend(&it); xh_next(&it)) {
     ++c;
   }
   assert(c == ec);
