@@ -117,6 +117,7 @@ xh_destroy(struct xhash *x)
 }
 
 typedef struct xh_iter {
+  struct xhash *x;
   struct xh_entry *e;
   int bidx;
 } xh_iter;
@@ -125,6 +126,8 @@ static inline void
 xh_begin(struct xhash *x, struct xh_iter *it)
 {
   int bidx;
+
+  it->x = x;
 
   for (bidx = 0; bidx < x->size; ++bidx) {
     if (x->buckets[bidx])
@@ -135,7 +138,7 @@ xh_begin(struct xhash *x, struct xh_iter *it)
 }
 
 static inline void
-xh_next(struct xhash *x, struct xh_iter *it)
+xh_next(struct xh_iter *it)
 {
   int bidx;
 
@@ -143,11 +146,11 @@ xh_next(struct xhash *x, struct xh_iter *it)
     it->e = it->e->next;
     return;
   }
-  for (bidx = it->bidx + 1; bidx < x->size; ++bidx) {
-    if (x->buckets[bidx])
+  for (bidx = it->bidx + 1; bidx < it->x->size; ++bidx) {
+    if (it->x->buckets[bidx])
       break;
   }
-  it->e = x->buckets[bidx];
+  it->e = it->x->buckets[bidx];
   it->bidx = bidx;
   return;
 }

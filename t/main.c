@@ -11,7 +11,7 @@ test_iteration(xhash *x, int ec)
 
   xh_begin(x, &it);
   while (! xh_isend(&it)) {
-    xh_next(x, &it);
+    xh_next(&it);
     ++c;
   }
   assert(c == ec);
