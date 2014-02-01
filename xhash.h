@@ -15,7 +15,7 @@ extern "C" {
 
 /* simple string to int hash table */
 
-char *
+static inline char *
 xh_strdup(const char *s)
 {
   size_t len;
