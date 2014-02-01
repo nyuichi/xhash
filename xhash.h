@@ -16,7 +16,7 @@ extern "C" {
 /* simple string to int hash table */
 
 char *
-strdup__(const char *s)
+xh_strdup(const char *s)
 {
   size_t len;
   char *r;
@@ -92,7 +92,7 @@ xh_put(struct xhash *x, const char *key, int val)
   idx = xh_hash(key) % x->size;
   e = (struct xh_entry *)malloc(sizeof(struct xh_entry));
   e->next = x->buckets[idx];
-  e->key = strdup__(key);
+  e->key = xh_strdup(key);
   e->val = val;
 
   return x->buckets[idx] = e;
