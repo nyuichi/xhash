@@ -53,10 +53,10 @@ xh_new()
   return x;
 }
 
-static unsigned
+static int
 xh_hash(const char *str)
 {
-  unsigned hash = 0;
+  int hash = 0;
 
   while (*str) {
     hash = hash * 31 + *str++;
@@ -70,7 +70,7 @@ xh_get(struct xhash *x, const char *key)
   size_t idx;
   struct xh_entry *e;
 
-  idx = xh_hash(key) % x->size;
+  idx = ((unsigned)xh_hash(key)) % x->size;
   for (e = x->buckets[idx]; e; e = e->next) {
     if (strcmp(key, e->key) == 0)
       break;
@@ -89,7 +89,7 @@ xh_put(struct xhash *x, const char *key, int val)
     return e;
   }
 
-  idx = xh_hash(key) % x->size;
+  idx = ((unsigned)xh_hash(key)) % x->size;
   e = (struct xh_entry *)malloc(sizeof(struct xh_entry));
   e->next = x->buckets[idx];
   e->key = xh_strdup(key);
