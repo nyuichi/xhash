@@ -46,6 +46,24 @@ xh_new(xh_hashf hashf, xh_equalf equalf)
   return x;
 }
 
+static int
+xh_str_hash(const void *key)
+{
+  const char *str = key;
+  int hash = 0;
+
+  while (*str) {
+    hash = hash * 31 + *str++;
+  }
+  return hash;
+}
+
+static int
+xh_str_equal(const void *s1, const void *s2)
+{
+  return strcmp((const char *)s1, (const char *)s2) == 0;
+}
+
 static inline struct xh_entry *
 xh_get(struct xhash *x, const void *key)
 {
