@@ -58,9 +58,9 @@ xh_str_hash(const void *key)
 }
 
 static int
-xh_str_equal(const void *s1, const void *s2)
+xh_str_equal(const void *key1, const void *key2)
 {
-  return strcmp((const char *)s1, (const char *)s2) == 0;
+  return strcmp((const char *)key1, (const char *)key2) == 0;
 }
 
 static inline xhash *
