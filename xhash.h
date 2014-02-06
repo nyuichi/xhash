@@ -27,7 +27,7 @@ typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
   xh_entry **buckets;
-  int size;
+  size_t size;
   xh_hashf hashf;
   xh_equalf equalf;
 } xhash;
@@ -124,7 +124,7 @@ xh_put(xhash *x, const void *key, int val)
 static inline void
 xh_destroy(xhash *x)
 {
-  int i;
+  size_t i;
   xh_entry *e, *d;
 
   for (i = 0; i < x->size; ++i) {
@@ -141,13 +141,13 @@ xh_destroy(xhash *x)
 typedef struct xh_iter {
   xhash *x;
   xh_entry *e;
-  int bidx;
+  size_t bidx;
 } xh_iter;
 
 static inline void
 xh_begin(xhash *x, xh_iter *it)
 {
-  int bidx;
+  size_t bidx;
 
   it->x = x;
 
@@ -162,7 +162,7 @@ xh_begin(xhash *x, xh_iter *it)
 static inline void
 xh_next(xh_iter *it)
 {
-  int bidx;
+  size_t bidx;
 
   if (it->e->next) {
     it->e = it->e->next;
