@@ -12,14 +12,14 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-/* simple object to int hash table */
+/* simple object to long hash table */
 
 #define XHASH_INIT_SIZE 11
 
 typedef struct xh_entry {
   struct xh_entry *next;
   const void *key;
-  long long val;
+  long val;
 } xh_entry;
 
 typedef int (*xh_hashf)(const void *);
@@ -72,7 +72,7 @@ xh_new_str()
 static int
 xh_ptr_hash(const void *key)
 {
-  return (int)(long long)key;
+  return (int)(long)key;
 }
 
 static int
@@ -102,7 +102,7 @@ xh_get(xhash *x, const void *key)
 }
 
 static inline xh_entry *
-xh_put(xhash *x, const void *key, long long val)
+xh_put(xhash *x, const void *key, long val)
 {
   size_t idx;
   xh_entry *e;
