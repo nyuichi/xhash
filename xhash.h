@@ -69,6 +69,24 @@ xh_new_str()
   return xh_new(xh_str_hash, xh_str_equal);
 }
 
+static int
+xh_ptr_hash(const void *key)
+{
+  return (int)key;
+}
+
+static int
+xh_ptr_equal(const void *key1, const void *key2)
+{
+  return key1 == key2;
+}
+
+static inline xhash *
+xh_new_ptr()
+{
+  return xh_new(xh_ptr_hash, xh_ptr_equal);
+}
+
 static inline xh_entry *
 xh_get(xhash *x, const void *key)
 {
