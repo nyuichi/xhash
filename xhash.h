@@ -64,6 +64,12 @@ xh_str_equal(const void *s1, const void *s2)
   return strcmp((const char *)s1, (const char *)s2) == 0;
 }
 
+static inline struct xhash *
+xh_new_str()
+{
+  return xh_new(xh_str_hash, xh_str_equal);
+}
+
 static inline struct xh_entry *
 xh_get(struct xhash *x, const void *key)
 {
