@@ -19,7 +19,7 @@ extern "C" {
 typedef struct xh_entry {
   struct xh_entry *next;
   const void *key;
-  int val;
+  long long val;
 } xh_entry;
 
 typedef int (*xh_hashf)(const void *);
@@ -102,7 +102,7 @@ xh_get(xhash *x, const void *key)
 }
 
 static inline xh_entry *
-xh_put(xhash *x, const void *key, int val)
+xh_put(xhash *x, const void *key, long long val)
 {
   size_t idx;
   xh_entry *e;
