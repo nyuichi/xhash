@@ -72,7 +72,7 @@ xh_new_str()
 static int
 xh_ptr_hash(const void *key)
 {
-  return (int)key;
+  return (int)(long long)key;
 }
 
 static int
