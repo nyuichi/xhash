@@ -13,7 +13,6 @@ extern "C" {
 #include <string.h>
 #include <stdbool.h>
 
-/* simple string to int hash table */
 
 static inline char *
 xh_strdup(const char *s)
@@ -28,58 +27,55 @@ xh_strdup(const char *s)
 
   return r;
 }
+/* simple object to int hash table */
 
 #define XHASH_INIT_SIZE 11
 
 typedef struct xh_entry {
   struct xh_entry *next;
-  const char *key;
+  const void *key;
   int val;
 } xh_entry;
+
+typedef int (*xh_hashf)(const void *);
+typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
   struct xh_entry **buckets;
   int size;
+  xh_hashf hashf;
+  xh_equalf equalf;
 } xhash;
 
 static inline struct xhash *
-xh_new()
+xh_new(xh_hashf hashf, xh_equalf equalf)
 {
   struct xhash *x;
 
   x = (struct xhash *)malloc(sizeof(struct xhash));
   x->size = XHASH_INIT_SIZE;
   x->buckets = (struct xh_entry **)calloc(XHASH_INIT_SIZE + 1, sizeof(struct xh_entry *));
+  x->hashf = hashf;
+  x->equalf = equalf;
   return x;
 }
 
-static int
-xh_hash(const char *str)
-{
-  int hash = 0;
-
-  while (*str) {
-    hash = hash * 31 + *str++;
-  }
-  return hash;
-}
-
 static inline struct xh_entry *
-xh_get(struct xhash *x, const char *key)
+xh_get(struct xhash *x, const void *key)
 {
   size_t idx;
   struct xh_entry *e;
 
-  idx = ((unsigned)xh_hash(key)) % x->size;
+  idx = ((unsigned)x->hashf(key)) % x->size;
   for (e = x->buckets[idx]; e; e = e->next) {
-    if (strcmp(key, e->key) == 0)
+    if (x->equalf(key, e->key))
       break;
   }
   return e;
 }
 
 static inline struct xh_entry *
-xh_put(struct xhash *x, const char *key, int val)
+xh_put(struct xhash *x, const void *key, int val)
 {
   size_t idx;
   struct xh_entry *e;
@@ -89,10 +85,10 @@ xh_put(struct xhash *x, const char *key, int val)
     return e;
   }
 
-  idx = ((unsigned)xh_hash(key)) % x->size;
+  idx = ((unsigned)x->hashf(key)) % x->size;
   e = (struct xh_entry *)malloc(sizeof(struct xh_entry));
   e->next = x->buckets[idx];
-  e->key = xh_strdup(key);
+  e->key = key;
   e->val = val;
 
   return x->buckets[idx] = e;
@@ -108,7 +104,6 @@ xh_destroy(struct xhash *x)
     e = x->buckets[i];
     while (e) {
       d = e->next;
-      free((void*)e->key);
       free(e);
       e = d;
     }
