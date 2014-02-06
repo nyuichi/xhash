@@ -20,7 +20,7 @@ test()
 {
   struct xh_entry *e;
 
-  xhash *x = xh_new();
+  xhash *x = xh_new_str();
 
   xh_put(x, "a", 1);
   xh_put(x, "b", 2);
