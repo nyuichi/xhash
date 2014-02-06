@@ -13,20 +13,6 @@ extern "C" {
 #include <string.h>
 #include <stdbool.h>
 
-
-static inline char *
-xh_strdup(const char *s)
-{
-  size_t len;
-  char *r;
-
-  len = strlen(s);
-  r = malloc(len + 1);
-  memcpy(r, s, len);
-  r[len] = '\0';
-
-  return r;
-}
 /* simple object to int hash table */
 
 #define XHASH_INIT_SIZE 11
