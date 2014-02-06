@@ -11,6 +11,7 @@ extern "C" {
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 /* simple object to long hash table */
 
@@ -87,6 +88,13 @@ xh_new_ptr()
   return xh_new(xh_ptr_hash, xh_ptr_equal);
 }
 
+static inline xhash *
+xh_new_int()
+{
+  assert(sizeof(long) <= sizeof(void *));
+  return xh_new(xh_ptr_hash, xh_ptr_equal);
+}
+
 static inline xh_entry *
 xh_get(xhash *x, const void *key)
 {
@@ -119,6 +127,18 @@ xh_put(xhash *x, const void *key, long val)
   e->val = val;
 
   return x->buckets[idx] = e;
+}
+
+static inline xh_entry *
+xh_get_int(xhash *x, long key)
+{
+  return xh_get(x, (void *)key);
+}
+
+static inline xh_entry *
+xh_put_int(xhash *x, long key, long val)
+{
+  return xh_put(x, (void *)key, val);
 }
 
 static inline void
