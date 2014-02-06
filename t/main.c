@@ -6,7 +6,7 @@
 void
 test_iteration(xhash *x, int ec)
 {
-  struct xh_iter it;
+  xh_iter it;
   int c = 0;
 
   for (xh_begin(x, &it); ! xh_isend(&it); xh_next(&it)) {
@@ -18,7 +18,7 @@ test_iteration(xhash *x, int ec)
 void
 test()
 {
-  struct xh_entry *e;
+  xh_entry *e;
 
   xhash *x = xh_new_str();
 

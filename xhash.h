@@ -26,20 +26,20 @@ typedef int (*xh_hashf)(const void *);
 typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
-  struct xh_entry **buckets;
+  xh_entry **buckets;
   int size;
   xh_hashf hashf;
   xh_equalf equalf;
 } xhash;
 
-static inline struct xhash *
+static inline xhash *
 xh_new(xh_hashf hashf, xh_equalf equalf)
 {
-  struct xhash *x;
+  xhash *x;
 
-  x = (struct xhash *)malloc(sizeof(struct xhash));
+  x = (xhash *)malloc(sizeof(xhash));
   x->size = XHASH_INIT_SIZE;
-  x->buckets = (struct xh_entry **)calloc(XHASH_INIT_SIZE + 1, sizeof(struct xh_entry *));
+  x->buckets = (xh_entry **)calloc(XHASH_INIT_SIZE + 1, sizeof(xh_entry *));
   x->hashf = hashf;
   x->equalf = equalf;
   return x;
@@ -63,17 +63,17 @@ xh_str_equal(const void *s1, const void *s2)
   return strcmp((const char *)s1, (const char *)s2) == 0;
 }
 
-static inline struct xhash *
+static inline xhash *
 xh_new_str()
 {
   return xh_new(xh_str_hash, xh_str_equal);
 }
 
-static inline struct xh_entry *
-xh_get(struct xhash *x, const void *key)
+static inline xh_entry *
+xh_get(xhash *x, const void *key)
 {
   size_t idx;
-  struct xh_entry *e;
+  xh_entry *e;
 
   idx = ((unsigned)x->hashf(key)) % x->size;
   for (e = x->buckets[idx]; e; e = e->next) {
@@ -83,11 +83,11 @@ xh_get(struct xhash *x, const void *key)
   return e;
 }
 
-static inline struct xh_entry *
-xh_put(struct xhash *x, const void *key, int val)
+static inline xh_entry *
+xh_put(xhash *x, const void *key, int val)
 {
   size_t idx;
-  struct xh_entry *e;
+  xh_entry *e;
 
   if ((e = xh_get(x, key))) {
     e->val = val;
@@ -95,7 +95,7 @@ xh_put(struct xhash *x, const void *key, int val)
   }
 
   idx = ((unsigned)x->hashf(key)) % x->size;
-  e = (struct xh_entry *)malloc(sizeof(struct xh_entry));
+  e = (xh_entry *)malloc(sizeof(xh_entry));
   e->next = x->buckets[idx];
   e->key = key;
   e->val = val;
@@ -104,10 +104,10 @@ xh_put(struct xhash *x, const void *key, int val)
 }
 
 static inline void
-xh_destroy(struct xhash *x)
+xh_destroy(xhash *x)
 {
   int i;
-  struct xh_entry *e, *d;
+  xh_entry *e, *d;
 
   for (i = 0; i < x->size; ++i) {
     e = x->buckets[i];
@@ -121,13 +121,13 @@ xh_destroy(struct xhash *x)
 }
 
 typedef struct xh_iter {
-  struct xhash *x;
-  struct xh_entry *e;
+  xhash *x;
+  xh_entry *e;
   int bidx;
 } xh_iter;
 
 static inline void
-xh_begin(struct xhash *x, struct xh_iter *it)
+xh_begin(xhash *x, xh_iter *it)
 {
   int bidx;
 
@@ -142,7 +142,7 @@ xh_begin(struct xhash *x, struct xh_iter *it)
 }
 
 static inline void
-xh_next(struct xh_iter *it)
+xh_next(xh_iter *it)
 {
   int bidx;
 
@@ -160,7 +160,7 @@ xh_next(struct xh_iter *it)
 }
 
 static inline int
-xh_isend(struct xh_iter *it)
+xh_isend(xh_iter *it)
 {
   return it->e == NULL;
 }
