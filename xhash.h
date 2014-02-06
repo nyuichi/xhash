@@ -11,7 +11,6 @@ extern "C" {
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 /* simple object to int hash table */
 
@@ -160,7 +159,7 @@ xh_next(struct xh_iter *it)
   return;
 }
 
-static inline bool
+static inline int
 xh_isend(struct xh_iter *it)
 {
   return it->e == NULL;
