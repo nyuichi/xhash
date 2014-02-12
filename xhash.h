@@ -142,7 +142,7 @@ xh_put_int(xhash *x, long key, long val)
 }
 
 static inline void
-xh_destroy(xhash *x)
+xh_clear(xhash *x)
 {
   size_t i;
   xh_entry *e, *d;
@@ -154,7 +154,15 @@ xh_destroy(xhash *x)
       free(e);
       e = d;
     }
+    x->buckets[i] = NULL;
   }
+}
+
+static inline void
+xh_destroy(xhash *x)
+{
+  xh_clear(x);
+  free(x->buckets);
   free(x);
 }
 
