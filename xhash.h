@@ -129,6 +129,29 @@ xh_put(xhash *x, const void *key, long val)
   return x->buckets[idx] = e;
 }
 
+static inline void
+xh_del(xhash *x, const void *key)
+{
+  size_t idx;
+  xh_entry *e, *d;
+
+  idx = ((unsigned)x->hashf(key)) % x->size;
+  if (x->equalf(key, x->buckets[idx]->key)) {
+    e = x->buckets[idx]->next;
+    free(x->buckets[idx]);
+    x->buckets[idx] = e;
+  }
+  else {
+    for (e = x->buckets[idx]; ; e = e->next) {
+      if (x->equalf(key, e->next->key))
+        break;
+    }
+    d = e->next->next;
+    free(e->next);
+    e->next = d;
+  }
+}
+
 static inline xh_entry *
 xh_get_int(xhash *x, long key)
 {
