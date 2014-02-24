@@ -16,6 +16,22 @@ test_iteration(xhash *x, int ec)
 }
 
 void
+test_resize(size_t c)
+{
+  xhash *x;
+  size_t i;
+
+  x = xh_new_int();
+
+  for (i = 0; i < c; ++i) {
+    xh_put_int(x, i, i);
+  }
+
+  assert(x->count == c);
+  assert(x->count <= x->size * XHASH_RESIZE_RATIO);
+}
+
+void
 test()
 {
   xh_entry *e;
@@ -44,6 +60,7 @@ main()
   puts("---- xhash test started ----");
 
   test();
+  test_resize(300);
 
   puts("---- xhash test successfully finished ----");
 
