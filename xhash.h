@@ -16,6 +16,7 @@ extern "C" {
 /* simple object to long hash table */
 
 #define XHASH_INIT_SIZE 11
+#define XHASH_RESIZE_RATIO 0.75
 
 typedef struct xh_entry {
   struct xh_entry *next;
@@ -29,7 +30,7 @@ typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
   xh_entry **buckets;
-  size_t size;
+  size_t size, count;
   xh_hashf hashf;
   xh_equalf equalf;
 } xhash;
@@ -41,6 +42,7 @@ xh_new(xh_hashf hashf, xh_equalf equalf)
 
   x = (xhash *)malloc(sizeof(xhash));
   x->size = XHASH_INIT_SIZE;
+  x->count = 0;
   x->buckets = (xh_entry **)calloc(XHASH_INIT_SIZE + 1, sizeof(xh_entry *));
   x->hashf = hashf;
   x->equalf = equalf;
@@ -112,6 +114,8 @@ xh_get(xhash *x, const void *key)
   return e;
 }
 
+static inline void xh_resize(xhash *, size_t);
+
 static inline xh_entry *
 xh_put(xhash *x, const void *key, long val)
 {
@@ -124,6 +128,10 @@ xh_put(xhash *x, const void *key, long val)
     return e;
   }
 
+  if (x->count + 1 > x->size * XHASH_RESIZE_RATIO) {
+    xh_resize(x, x->size * 2 + 1);
+  }
+
   hash = x->hashf(key);
   idx = ((unsigned)hash) % x->size;
   e = (xh_entry *)malloc(sizeof(xh_entry));
@@ -131,6 +139,8 @@ xh_put(xhash *x, const void *key, long val)
   e->hash = hash;
   e->key = key;
   e->val = val;
+
+  x->count++;
 
   return x->buckets[idx] = e;
 }
@@ -158,6 +168,8 @@ xh_del(xhash *x, const void *key)
     free(e->next);
     e->next = d;
   }
+
+  x->count--;
 }
 
 static inline xh_entry *
@@ -187,6 +199,8 @@ xh_clear(xhash *x)
     }
     x->buckets[i] = NULL;
   }
+
+  x->count = 0;
 }
 
 static inline void
@@ -240,6 +254,30 @@ static inline int
 xh_isend(xh_iter *it)
 {
   return it->e == NULL;
+}
+
+static inline void
+xh_resize(xhash *x, size_t newsize)
+{
+  xhash *y;
+  xh_iter it;
+
+  y = xh_new(x->hashf, x->equalf);
+  y->size = newsize;
+  y->buckets = realloc(y->buckets, sizeof(xh_entry *) * (newsize + 1));
+
+  for (xh_begin(x, &it); ! xh_isend(&it); xh_next(&it)) {
+    xh_put(y, it.e->key, it.e->val);
+  }
+
+  xh_clear(x);
+  free(x->buckets);
+
+  x->size = y->size;
+  x->count = y->count;
+  x->buckets = y->buckets;
+
+  free(y);
 }
 
 #if defined(__cplusplus)
