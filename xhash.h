@@ -19,6 +19,7 @@ extern "C" {
 
 typedef struct xh_entry {
   struct xh_entry *next;
+  int hash;
   const void *key;
   long val;
 } xh_entry;
@@ -98,12 +99,14 @@ xh_new_int()
 static inline xh_entry *
 xh_get(xhash *x, const void *key)
 {
+  int hash;
   size_t idx;
   xh_entry *e;
 
-  idx = ((unsigned)x->hashf(key)) % x->size;
+  hash = x->hashf(key);
+  idx = ((unsigned)hash) % x->size;
   for (e = x->buckets[idx]; e; e = e->next) {
-    if (x->equalf(key, e->key))
+    if (e->hash == hash && x->equalf(key, e->key))
       break;
   }
   return e;
@@ -112,6 +115,7 @@ xh_get(xhash *x, const void *key)
 static inline xh_entry *
 xh_put(xhash *x, const void *key, long val)
 {
+  int hash;
   size_t idx;
   xh_entry *e;
 
@@ -120,9 +124,11 @@ xh_put(xhash *x, const void *key, long val)
     return e;
   }
 
-  idx = ((unsigned)x->hashf(key)) % x->size;
+  hash = x->hashf(key);
+  idx = ((unsigned)hash) % x->size;
   e = (xh_entry *)malloc(sizeof(xh_entry));
   e->next = x->buckets[idx];
+  e->hash = hash;
   e->key = key;
   e->val = val;
 
@@ -132,18 +138,20 @@ xh_put(xhash *x, const void *key, long val)
 static inline void
 xh_del(xhash *x, const void *key)
 {
+  int hash;
   size_t idx;
   xh_entry *e, *d;
 
-  idx = ((unsigned)x->hashf(key)) % x->size;
-  if (x->equalf(key, x->buckets[idx]->key)) {
+  hash = x->hashf(key);
+  idx = ((unsigned)hash) % x->size;
+  if (x->buckets[idx]->hash == hash && x->equalf(key, x->buckets[idx]->key)) {
     e = x->buckets[idx]->next;
     free(x->buckets[idx]);
     x->buckets[idx] = e;
   }
   else {
     for (e = x->buckets[idx]; ; e = e->next) {
-      if (x->equalf(key, e->next->key))
+      if (e->hash == hash && x->equalf(key, e->next->key))
         break;
     }
     d = e->next->next;
