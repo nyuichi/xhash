@@ -4,10 +4,17 @@
 #include "../xhash.h"
 
 void
-test_iteration(xhash *x, int ec)
+test_iteration(int ec)
 {
+  xhash *x;
   xh_iter it;
-  int c = 0;
+  int i, c = 0;
+
+  x = xh_new_int();
+
+  for (i = 0; i < ec; ++i) {
+    xh_put_int(x, i, i);
+  }
 
   for (xh_begin(x, &it); ! xh_isend(&it); xh_next(&it)) {
     ++c;
@@ -49,8 +56,6 @@ test()
   e = xh_get(x, "c");
   assert(e && e->val == 3);
 
-  test_iteration(x, 3);
-
   xh_destroy(x);
 }
 
@@ -60,6 +65,7 @@ main()
   puts("---- xhash test started ----");
 
   test();
+  test_iteration(30);
   test_resize(300);
 
   puts("---- xhash test successfully finished ----");
