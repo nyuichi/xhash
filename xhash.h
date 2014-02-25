@@ -265,6 +265,7 @@ xh_resize(xhash *x, size_t newsize)
   y = xh_new(x->hashf, x->equalf);
   y->size = newsize;
   y->buckets = realloc(y->buckets, sizeof(xh_entry *) * (newsize + 1));
+  memset(y->buckets, 0, sizeof(xh_entry *) * (newsize + 1));
 
   for (xh_begin(x, &it); ! xh_isend(&it); xh_next(&it)) {
     xh_put(y, it.e->key, it.e->val);
