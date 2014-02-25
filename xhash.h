@@ -161,7 +161,7 @@ xh_del(xhash *x, const void *key)
   }
   else {
     for (e = x->buckets[idx]; ; e = e->next) {
-      if (e->hash == hash && x->equalf(key, e->next->key))
+      if (e->next->hash == hash && x->equalf(key, e->next->key))
         break;
     }
     d = e->next->next;
