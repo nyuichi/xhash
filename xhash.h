@@ -263,22 +263,21 @@ xh_resize(xhash *x, size_t newsize)
   xh_iter it;
 
   y = xh_new(x->hashf, x->equalf);
-  y->size = newsize;
-  y->buckets = realloc(y->buckets, sizeof(xh_entry *) * (newsize + 1));
-  memset(y->buckets, 0, sizeof(xh_entry *) * (newsize + 1));
+  free(y->buckets);
+  y->count = x->count;
+  y->size = x->size;
+  y->buckets = x->buckets;
 
-  for (xh_begin(x, &it); ! xh_isend(&it); xh_next(&it)) {
-    xh_put(y, it.e->key, it.e->val);
+  /* empty with resized buckets */
+  x->count = 0;
+  x->size = newsize;
+  x->buckets = (xh_entry **)calloc(newsize + 1, sizeof(xh_entry *));
+
+  for (xh_begin(y, &it); ! xh_isend(&it); xh_next(&it)) {
+    xh_put(x, it.e->key, it.e->val);
   }
 
-  xh_clear(x);
-  free(x->buckets);
-
-  x->size = y->size;
-  x->count = y->count;
-  x->buckets = y->buckets;
-
-  free(y);
+  xh_destroy(y);
 }
 
 #if defined(__cplusplus)
