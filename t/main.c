@@ -6,17 +6,17 @@
 void
 test_iteration(int ec)
 {
-  xhash *x;
+  xhash x;
   xh_iter it;
   int i, c = 0;
 
-  x = xh_new_int();
+  xh_init(&x, xh_ptr_hash, xh_ptr_equal);
 
   for (i = 0; i < ec; ++i) {
-    xh_put_int(x, i, i);
+    xh_put(&x, (void *)(long)i, i);
   }
 
-  for (xh_begin(x, &it); ! xh_isend(&it); xh_next(&it)) {
+  for (xh_begin(&x, &it); ! xh_isend(&it); xh_next(&it)) {
     ++c;
   }
   assert(c == ec);
@@ -25,38 +25,39 @@ test_iteration(int ec)
 void
 test_resize(size_t c)
 {
-  xhash *x;
+  xhash x;
   size_t i;
 
-  x = xh_new_int();
+  xh_init(&x, xh_ptr_hash, xh_ptr_equal);
 
   for (i = 0; i < c; ++i) {
-    xh_put_int(x, i, i);
+    xh_put(&x, (void *)(long)i, i);
   }
 
-  assert(x->count == c);
-  assert(x->count <= x->size * XHASH_RESIZE_RATIO);
+  assert(x.count == c);
+  assert(x.count <= x.size * XHASH_RESIZE_RATIO);
 }
 
 void
 test()
 {
   xh_entry *e;
+  xhash x;
 
-  xhash *x = xh_new_str();
+  xh_init(&x, xh_str_hash, xh_str_equal);
 
-  xh_put(x, "a", 1);
-  xh_put(x, "b", 2);
-  xh_put(x, "c", 3);
+  xh_put(&x, "a", 1);
+  xh_put(&x, "b", 2);
+  xh_put(&x, "c", 3);
 
-  e = xh_get(x, "a");
+  e = xh_get(&x, "a");
   assert(e && e->val == 1);
-  e = xh_get(x, "b");
+  e = xh_get(&x, "b");
   assert(e && e->val == 2);
-  e = xh_get(x, "c");
+  e = xh_get(&x, "c");
   assert(e && e->val == 3);
 
-  xh_destroy(x);
+  xh_destroy(&x);
 }
 
 int
