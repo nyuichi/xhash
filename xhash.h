@@ -42,20 +42,10 @@ static inline void xh_del(xhash *x, const void *key);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
 
-/* string */
 static int xh_str_hash(const void *key);
 static int xh_str_equal(const void *key1, const void *key2);
-static inline xhash *xh_new_str();
-
-/* raw pointer */
 static int xh_ptr_hash(const void *key);
 static int xh_ptr_equal(const void *key1, const void *key2);
-static inline xhash *xh_new_ptr();
-
-/* integer */
-static inline xhash *xh_new_int();
-static inline xh_entry *xh_get_int(xhash *x, long key);
-static inline xh_entry *xh_put_int(xhash *x, long key, long val);
 
 typedef struct xh_iter {
   xhash *x;
@@ -80,55 +70,6 @@ xh_new(xh_hashf hashf, xh_equalf equalf)
   x->hashf = hashf;
   x->equalf = equalf;
   return x;
-}
-
-static int
-xh_str_hash(const void *key)
-{
-  const char *str = key;
-  int hash = 0;
-
-  while (*str) {
-    hash = hash * 31 + *str++;
-  }
-  return hash;
-}
-
-static int
-xh_str_equal(const void *key1, const void *key2)
-{
-  return strcmp((const char *)key1, (const char *)key2) == 0;
-}
-
-static inline xhash *
-xh_new_str()
-{
-  return xh_new(xh_str_hash, xh_str_equal);
-}
-
-static int
-xh_ptr_hash(const void *key)
-{
-  return (int)(long)key;
-}
-
-static int
-xh_ptr_equal(const void *key1, const void *key2)
-{
-  return key1 == key2;
-}
-
-static inline xhash *
-xh_new_ptr()
-{
-  return xh_new(xh_ptr_hash, xh_ptr_equal);
-}
-
-static inline xhash *
-xh_new_int()
-{
-  assert(sizeof(long) <= sizeof(void *));
-  return xh_new(xh_ptr_hash, xh_ptr_equal);
 }
 
 static inline xh_entry *
@@ -227,18 +168,6 @@ xh_del(xhash *x, const void *key)
   x->count--;
 }
 
-static inline xh_entry *
-xh_get_int(xhash *x, long key)
-{
-  return xh_get(x, (void *)key);
-}
-
-static inline xh_entry *
-xh_put_int(xhash *x, long key, long val)
-{
-  return xh_put(x, (void *)key, val);
-}
-
 static inline void
 xh_clear(xhash *x)
 {
@@ -265,6 +194,40 @@ xh_destroy(xhash *x)
   free(x->buckets);
   free(x);
 }
+
+/** type specific */
+
+static inline int
+xh_str_hash(const void *key)
+{
+  const char *str = key;
+  int hash = 0;
+
+  while (*str) {
+    hash = hash * 31 + *str++;
+  }
+  return hash;
+}
+
+static inline int
+xh_str_equal(const void *key1, const void *key2)
+{
+  return strcmp((const char *)key1, (const char *)key2) == 0;
+}
+
+static inline int
+xh_ptr_hash(const void *key)
+{
+  return (int)(long)key;
+}
+
+static inline int
+xh_ptr_equal(const void *key1, const void *key2)
+{
+  return key1 == key2;
+}
+
+/** iteration */
 
 static inline void
 xh_begin(xhash *x, xh_iter *it)
