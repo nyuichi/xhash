@@ -53,9 +53,9 @@ typedef struct xh_iter {
   size_t bidx;
 } xh_iter;
 
-static inline void xh_begin(xhash *x, xh_iter *it);
+static inline void xh_begin(xh_iter *it, xhash *x);
 static inline void xh_next(xh_iter *it);
-static inline int xh_isend(xh_iter *it);
+static inline int xh_end(xh_iter *it);
 
 static inline void
 xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf)
@@ -100,7 +100,7 @@ xh_resize(xhash *x, size_t newsize)
   x->size = newsize;
   x->buckets = (xh_entry **)calloc(newsize + 1, sizeof(xh_entry *));
 
-  for (xh_begin(&y, &it); ! xh_isend(&it); xh_next(&it)) {
+  for (xh_begin(&it, &y); ! xh_end(&it); xh_next(&it)) {
     xh_put(x, it.e->key, it.e->val);
   }
 
@@ -224,7 +224,7 @@ xh_ptr_equal(const void *key1, const void *key2)
 /** iteration */
 
 static inline void
-xh_begin(xhash *x, xh_iter *it)
+xh_begin(xh_iter *it, xhash *x)
 {
   size_t bidx;
 
@@ -257,7 +257,7 @@ xh_next(xh_iter *it)
 }
 
 static inline int
-xh_isend(xh_iter *it)
+xh_end(xh_iter *it)
 {
   return it->e == NULL;
 }
