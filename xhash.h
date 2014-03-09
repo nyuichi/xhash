@@ -35,6 +35,39 @@ typedef struct xhash {
   xh_equalf equalf;
 } xhash;
 
+static inline xhash *xh_new(xh_hashf hashf, xh_equalf equalf);
+static inline xh_entry *xh_get(xhash *x, const void *key);
+static inline xh_entry *xh_put(xhash *x, const void *key, long val);
+static inline void xh_del(xhash *x, const void *key);
+static inline void xh_clear(xhash *x);
+static inline void xh_destroy(xhash *x);
+
+/* string */
+static int xh_str_hash(const void *key);
+static int xh_str_equal(const void *key1, const void *key2);
+static inline xhash *xh_new_str();
+
+/* raw pointer */
+static int xh_ptr_hash(const void *key);
+static int xh_ptr_equal(const void *key1, const void *key2);
+static inline xhash *xh_new_ptr();
+
+/* integer */
+static inline xhash *xh_new_int();
+static inline xh_entry *xh_get_int(xhash *x, long key);
+static inline xh_entry *xh_put_int(xhash *x, long key, long val);
+
+typedef struct xh_iter {
+  xhash *x;
+  xh_entry *e;
+  size_t bidx;
+} xh_iter;
+
+static inline void xh_begin(xhash *x, xh_iter *it);
+static inline void xh_next(xh_iter *it);
+static inline int xh_isend(xh_iter *it);
+
+
 static inline xhash *
 xh_new(xh_hashf hashf, xh_equalf equalf)
 {
@@ -114,7 +147,29 @@ xh_get(xhash *x, const void *key)
   return e;
 }
 
-static inline void xh_resize(xhash *, size_t);
+static inline void
+xh_resize(xhash *x, size_t newsize)
+{
+  xhash *y;
+  xh_iter it;
+
+  y = xh_new(x->hashf, x->equalf);
+  free(y->buckets);
+  y->count = x->count;
+  y->size = x->size;
+  y->buckets = x->buckets;
+
+  /* empty with resized buckets */
+  x->count = 0;
+  x->size = newsize;
+  x->buckets = (xh_entry **)calloc(newsize + 1, sizeof(xh_entry *));
+
+  for (xh_begin(y, &it); ! xh_isend(&it); xh_next(&it)) {
+    xh_put(x, it.e->key, it.e->val);
+  }
+
+  xh_destroy(y);
+}
 
 static inline xh_entry *
 xh_put(xhash *x, const void *key, long val)
@@ -211,12 +266,6 @@ xh_destroy(xhash *x)
   free(x);
 }
 
-typedef struct xh_iter {
-  xhash *x;
-  xh_entry *e;
-  size_t bidx;
-} xh_iter;
-
 static inline void
 xh_begin(xhash *x, xh_iter *it)
 {
@@ -254,30 +303,6 @@ static inline int
 xh_isend(xh_iter *it)
 {
   return it->e == NULL;
-}
-
-static inline void
-xh_resize(xhash *x, size_t newsize)
-{
-  xhash *y;
-  xh_iter it;
-
-  y = xh_new(x->hashf, x->equalf);
-  free(y->buckets);
-  y->count = x->count;
-  y->size = x->size;
-  y->buckets = x->buckets;
-
-  /* empty with resized buckets */
-  x->count = 0;
-  x->size = newsize;
-  x->buckets = (xh_entry **)calloc(newsize + 1, sizeof(xh_entry *));
-
-  for (xh_begin(y, &it); ! xh_isend(&it); xh_next(&it)) {
-    xh_put(x, it.e->key, it.e->val);
-  }
-
-  xh_destroy(y);
 }
 
 #if defined(__cplusplus)
