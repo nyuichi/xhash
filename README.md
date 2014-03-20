@@ -23,7 +23,7 @@ typedef struct xhash {
   xh_equalf equalf;
 } xhash;
 
-static inline void xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf);
+static inline void xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf, size_t size);
 static inline xh_entry *xh_get(xhash *x, const void *key);
 static inline xh_entry *xh_put(xhash *x, const void *key, long val);
 static inline void xh_del(xhash *x, const void *key);
