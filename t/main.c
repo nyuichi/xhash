@@ -16,9 +16,12 @@ test_iteration(int ec)
     xh_put(&x, (void *)(long)i, i);
   }
 
-  for (xh_begin(&it, &x); ! xh_end(&it); xh_next(&it)) {
+  xh_begin(&it, &x);
+  while (xh_next(&it)) {
     ++c;
   }
+  xh_end(&it);
+
   assert(c == ec);
 }
 

@@ -49,13 +49,13 @@ static int xh_ptr_equal(const void *key1, const void *key2);
 
 typedef struct xh_iter {
   xhash *x;
-  xh_entry *e;
+  xh_entry *e, *next;
   size_t bidx;
 } xh_iter;
 
 static inline void xh_begin(xh_iter *it, xhash *x);
-static inline void xh_next(xh_iter *it);
-static inline int xh_end(xh_iter *it);
+static inline int xh_next(xh_iter *it);
+static inline void xh_end(xh_iter *it);
 
 static inline void
 xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf, size_t size)
@@ -100,9 +100,11 @@ xh_resize(xhash *x, size_t newsize)
   x->size = newsize;
   x->buckets = (xh_entry **)calloc(newsize + 1, sizeof(xh_entry *));
 
-  for (xh_begin(&it, &y); ! xh_end(&it); xh_next(&it)) {
+  xh_begin(&it, &y);
+  while (xh_next(&it)) {
     xh_put(x, it.e->key, it.e->val);
   }
+  xh_end(&it);
 
   xh_destroy(&y);
 }
@@ -234,32 +236,39 @@ xh_begin(xh_iter *it, xhash *x)
     if (x->buckets[bidx])
       break;
   }
-  it->e = x->buckets[bidx];
+  it->e = NULL;
+  it->next = x->buckets[bidx];
   it->bidx = bidx;
 }
 
-static inline void
+static inline int
 xh_next(xh_iter *it)
 {
   size_t bidx;
 
-  if (it->e->next) {
-    it->e = it->e->next;
-    return;
+  if (! it->next) {
+    return 0;
+  }
+
+  it->e = it->next;
+  if (it->next->next) {
+    it->next = it->next->next;
+    return 1;
   }
   for (bidx = it->bidx + 1; bidx < it->x->size; ++bidx) {
     if (it->x->buckets[bidx])
       break;
   }
-  it->e = it->x->buckets[bidx];
+  it->next = it->x->buckets[bidx];
   it->bidx = bidx;
-  return;
+  return 1;
 }
 
-static inline int
+static inline void
 xh_end(xh_iter *it)
 {
-  return it->e == NULL;
+  (void)it;
+  return;                       /* do nothing */
 }
 
 #if defined(__cplusplus)

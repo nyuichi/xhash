@@ -42,8 +42,8 @@ typedef struct xh_iter {
 } xh_iter;
 
 static inline void xh_begin(xh_iter *it, xhash *x);
-static inline void xh_next(xh_iter *it);
-static inline int xh_end(xh_iter *it);
+static inline int xh_next(xh_iter *it);
+static inline void xh_end(xh_iter *it);
 ```
 
 # License
