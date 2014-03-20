@@ -88,25 +88,24 @@ xh_resize(xhash *x, size_t newsize)
 {
   xhash y;
   xh_iter it;
+  size_t idx;
 
   xh_init(&y, x->hashf, x->equalf, newsize);
-  free(y.buckets);
-  y.count = x->count;
-  y.size = x->size;
-  y.buckets = x->buckets;
 
-  /* empty with resized buckets */
-  x->count = 0;
-  x->size = newsize;
-  x->buckets = (xh_entry **)calloc(newsize + 1, sizeof(xh_entry *));
-
-  xh_begin(&it, &y);
+  xh_begin(&it, x);
   while (xh_next(&it)) {
-    xh_put(x, it.e->key, it.e->val);
+    idx = ((unsigned)it.e->hash) % y.size;
+    /* reuse entry object */
+    it.e->next = y.buckets[idx];
+    y.buckets[idx] = it.e;
+    y.count++;
   }
   xh_end(&it);
 
-  xh_destroy(&y);
+  free(x->buckets);
+
+  /* copy all members from y to x */
+  memcpy(x, &y, sizeof(xhash));
 }
 
 static inline xh_entry *
