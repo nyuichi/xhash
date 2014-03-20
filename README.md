@@ -50,6 +50,10 @@ static inline void xh_end(xh_iter *it);
 
 This software is licensed under the 2-clause BSD license. See LICENSE for details.
 
+# Version
+
+- 2014.03.20 - Version 0.3
+
 # Auther
 
 Yuichi Nishiwaki
