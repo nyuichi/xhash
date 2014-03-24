@@ -6,15 +6,18 @@
 # Usage
 
 ```c
-typedef struct xh_entry {
-  struct xh_entry *next;
-  int hash;
-  const void *key;
-  char val[];
-} xh_entry;
+#define XHASH_INIT_SIZE 11
+#define XHASH_RESIZE_RATIO 0.75
 
-typedef int (*xh_hashf)(const void *);
-typedef int (*xh_equalf)(const void *, const void *);
+typedef intmax_t xh_key_t;
+
+typedef struct xh_entry xh_entry;
+
+#define xh_key(e,type) ((type)(e))
+#define xh_val(e,type) (*(type *)((e)->val))
+
+typedef int (*xh_hashf)(xh_key_t);
+typedef int (*xh_equalf)(xh_key_t, xh_key_t);
 
 typedef struct xhash {
   xh_entry **buckets;
@@ -24,16 +27,11 @@ typedef struct xhash {
 } xhash;
 
 static inline void xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf);
-static inline xh_entry *xh_get(xhash *x, const void *key);
-static inline xh_entry *xh_put(xhash *x, const void *key, void *val);
-static inline void xh_del(xhash *x, const void *key);
+#define xh_get(x, /* void* or int */key) xh_get_((x), (xh_key_t)(key))
+#define xh_put(x, /* void* or int */key, val) xh_put_((x), (xh_key_t)(key), val)
+static inline void xh_del(xhash *x, xh_key_t key);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
-
-static int xh_str_hash(const void *key);
-static int xh_str_equal(const void *key1, const void *key2);
-static int xh_ptr_hash(const void *key);
-static int xh_ptr_equal(const void *key1, const void *key2);
 
 typedef struct xh_iter {
   xhash *x;
@@ -43,6 +41,13 @@ typedef struct xh_iter {
 
 static inline void xh_begin(xh_iter *it, xhash *x);
 static inline int xh_next(xh_iter *it);
+
+static int xh_str_hash(xh_key_t key);
+static int xh_str_equal(xh_key_t key1, xh_key_t key2);
+static int xh_ptr_hash(xh_key_t key);
+static int xh_ptr_equal(xh_key_t key1, xh_key_t key2);
+static int xh_int_hash(xh_key_t key); /* applicable for any width integer type */
+static int xh_int_equal(xh_key_t key1, xh_key_t key2);
 ```
 
 # License
