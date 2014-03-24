@@ -24,12 +24,7 @@ extern "C" {
 
 typedef intmax_t xh_key_t;
 
-typedef struct xh_entry {
-  struct xh_entry *next;
-  int hash;
-  xh_key_t key;                 /* void* or any immediate integer type */
-  char val[];
-} xh_entry;
+typedef struct xh_entry xh_entry;
 
 #define xh_key(e,type) ((type)(e))
 #define xh_val(e,type) (*(type *)((e)->val))
@@ -66,6 +61,16 @@ static int xh_ptr_hash(xh_key_t key);
 static int xh_ptr_equal(xh_key_t key1, xh_key_t key2);
 static int xh_int_hash(xh_key_t key); /* applicable for any width integer type */
 static int xh_int_equal(xh_key_t key1, xh_key_t key2);
+
+
+/* implementations below */
+
+struct xh_entry {
+  struct xh_entry *next;
+  int hash;
+  xh_key_t key;                 /* void* or any immediate integer type */
+  char val[];
+};
 
 static inline void
 xh_bucket_realloc(xhash *x, size_t newsize)
