@@ -9,11 +9,14 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-/* simple object to long hash table */
+/* simple object to object hash table */
+
+/* xhash is potentially a weak map; it does not retain the ownership of keys */
 
 #define XHASH_INIT_SIZE 11
 #define XHASH_RESIZE_RATIO 0.75
@@ -22,7 +25,7 @@ typedef struct xh_entry {
   struct xh_entry *next;
   int hash;
   const void *key;
-  long val;
+  char val[];
 } xh_entry;
 
 typedef int (*xh_hashf)(const void *);
@@ -30,14 +33,14 @@ typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
   xh_entry **buckets;
-  size_t size, count;
+  size_t size, count, width;
   xh_hashf hashf;
   xh_equalf equalf;
 } xhash;
 
-static inline void xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf);
+static inline void xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf);
 static inline xh_entry *xh_get(xhash *x, const void *key);
-static inline xh_entry *xh_put(xhash *x, const void *key, long val);
+static inline xh_entry *xh_put(xhash *x, const void *key, void *val);
 static inline void xh_del(xhash *x, const void *key);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
@@ -65,11 +68,12 @@ xh_bucket_realloc(xhash *x, size_t newsize)
 }
 
 static inline void
-xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf)
+xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf)
 {
   x->size = 0;
   x->buckets = NULL;
   x->count = 0;
+  x->width = width;
   x->hashf = hashf;
   x->equalf = equalf;
 
@@ -99,7 +103,7 @@ xh_resize(xhash *x, size_t newsize)
   xh_iter it;
   size_t idx;
 
-  xh_init(&y, x->hashf, x->equalf);
+  xh_init(&y, x->width, x->hashf, x->equalf);
   xh_bucket_realloc(&y, newsize);
 
   xh_begin(&it, x);
@@ -118,14 +122,14 @@ xh_resize(xhash *x, size_t newsize)
 }
 
 static inline xh_entry *
-xh_put(xhash *x, const void *key, long val)
+xh_put(xhash *x, const void *key, void *val)
 {
   int hash;
   size_t idx;
   xh_entry *e;
 
   if ((e = xh_get(x, key))) {
-    e->val = val;
+    memcpy(e->val, val, x->width);
     return e;
   }
 
@@ -135,11 +139,11 @@ xh_put(xhash *x, const void *key, long val)
 
   hash = x->hashf(key);
   idx = ((unsigned)hash) % x->size;
-  e = (xh_entry *)malloc(sizeof(xh_entry));
+  e = (xh_entry *)malloc(offsetof(xh_entry, val) + x->width);
   e->next = x->buckets[idx];
   e->hash = hash;
   e->key = key;
-  e->val = val;
+  memcpy(e->val, val, x->width);
 
   x->count++;
 

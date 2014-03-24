@@ -10,7 +10,7 @@ typedef struct xh_entry {
   struct xh_entry *next;
   int hash;
   const void *key;
-  long val;
+  char val[];
 } xh_entry;
 
 typedef int (*xh_hashf)(const void *);
@@ -18,14 +18,14 @@ typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
   xh_entry **buckets;
-  size_t size, count;
+  size_t size, count, width;
   xh_hashf hashf;
   xh_equalf equalf;
 } xhash;
 
-static inline void xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf);
+static inline void xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf);
 static inline xh_entry *xh_get(xhash *x, const void *key);
-static inline xh_entry *xh_put(xhash *x, const void *key, long val);
+static inline xh_entry *xh_put(xhash *x, const void *key, void *val);
 static inline void xh_del(xhash *x, const void *key);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
@@ -37,7 +37,7 @@ static int xh_ptr_equal(const void *key1, const void *key2);
 
 typedef struct xh_iter {
   xhash *x;
-  xh_entry *e;
+  xh_entry *e, *next;
   size_t bidx;
 } xh_iter;
 

@@ -10,10 +10,10 @@ test_iteration(int ec)
   xh_iter it;
   int i, c = 0;
 
-  xh_init(&x, xh_ptr_hash, xh_ptr_equal);
+  xh_init(&x, sizeof(int), xh_ptr_hash, xh_ptr_equal);
 
   for (i = 0; i < ec; ++i) {
-    xh_put(&x, (void *)(long)i, i);
+    xh_put(&x, (void *)(long)i, &i);
   }
 
   xh_begin(&it, &x);
@@ -30,10 +30,10 @@ test_resize(size_t c)
   xhash x;
   size_t i;
 
-  xh_init(&x, xh_ptr_hash, xh_ptr_equal);
+  xh_init(&x, sizeof(int), xh_ptr_hash, xh_ptr_equal);
 
   for (i = 0; i < c; ++i) {
-    xh_put(&x, (void *)(long)i, i);
+    xh_put(&x, (void *)(long)i, &i);
   }
 
   assert(x.count == c);
@@ -45,19 +45,20 @@ test()
 {
   xh_entry *e;
   xhash x;
+  int one = 1, two = 2, three = 3;
 
-  xh_init(&x, xh_str_hash, xh_str_equal);
+  xh_init(&x, sizeof(int), xh_str_hash, xh_str_equal);
 
-  xh_put(&x, "a", 1);
-  xh_put(&x, "b", 2);
-  xh_put(&x, "c", 3);
+  xh_put(&x, "a", &one);
+  xh_put(&x, "b", &two);
+  xh_put(&x, "c", &three);
 
   e = xh_get(&x, "a");
-  assert(e && e->val == 1);
+  assert(e && memcmp(e->val, &one, sizeof(int)) == 0);
   e = xh_get(&x, "b");
-  assert(e && e->val == 2);
+  assert(e && memcmp(e->val, &two, sizeof(int)) == 0);
   e = xh_get(&x, "c");
-  assert(e && e->val == 3);
+  assert(e && memcmp(e->val, &three, sizeof(int)) == 0);
 
   xh_destroy(&x);
 }
