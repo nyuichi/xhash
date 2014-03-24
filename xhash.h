@@ -40,6 +40,9 @@ typedef struct xhash {
 } xhash;
 
 static inline void xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf);
+static inline void xh_init_str(xhash *x, size_t width);
+static inline void xh_init_ptr(xhash *x, size_t width);
+static inline void xh_init_int(xhash *x, size_t width); /* applicable to integer of any width */
 #define xh_get(x, /* void* or int */key) xh_get_((x), (xh_key_t)(key))
 #define xh_put(x, /* void* or int */key, val) xh_put_((x), (xh_key_t)(key), val)
 static inline void xh_del(xhash *x, xh_key_t key);
@@ -54,14 +57,6 @@ typedef struct xh_iter {
 
 static inline void xh_begin(xh_iter *it, xhash *x);
 static inline int xh_next(xh_iter *it);
-
-static int xh_str_hash(xh_key_t key);
-static int xh_str_equal(xh_key_t key1, xh_key_t key2);
-static int xh_ptr_hash(xh_key_t key);
-static int xh_ptr_equal(xh_key_t key1, xh_key_t key2);
-static int xh_int_hash(xh_key_t key); /* applicable for any width integer type */
-static int xh_int_equal(xh_key_t key1, xh_key_t key2);
-
 
 /* implementations below */
 
@@ -91,6 +86,66 @@ xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf)
   x->equalf = equalf;
 
   xh_bucket_realloc(x, XHASH_INIT_SIZE);
+}
+
+static inline int
+xh_str_hash(xh_key_t key)
+{
+  const char *str = (const char *)key;
+  int hash = 0;
+
+  while (*str) {
+    hash = hash * 31 + *str++;
+  }
+  return hash;
+}
+
+static inline int
+xh_str_equal(xh_key_t key1, xh_key_t key2)
+{
+  return strcmp((const char *)key1, (const char *)key2) == 0;
+}
+
+static inline void
+xh_init_str(xhash *x, size_t width)
+{
+  xh_init(x, width, xh_str_hash, xh_str_equal);
+}
+
+static inline int
+xh_ptr_hash(xh_key_t key)
+{
+  return (int)key;
+}
+
+static inline int
+xh_ptr_equal(xh_key_t key1, xh_key_t key2)
+{
+  return key1 == key2;
+}
+
+static inline void
+xh_init_ptr(xhash *x, size_t width)
+{
+  xh_init(x, width, xh_ptr_hash, xh_ptr_equal);
+}
+
+static inline int
+xh_int_hash(xh_key_t key)
+{
+  return (int)key;
+}
+
+static inline int
+xh_int_equal(xh_key_t key1, xh_key_t key2)
+{
+  return key1 == key2;
+}
+
+static inline void
+xh_init_int(xhash *x, size_t width)
+{
+  xh_init(x, width, xh_int_hash, xh_int_equal);
 }
 
 static inline xh_entry *
@@ -217,48 +272,6 @@ xh_destroy(xhash *x)
 }
 
 /** type specific */
-
-static inline int
-xh_str_hash(xh_key_t key)
-{
-  const char *str = (const char *)key;
-  int hash = 0;
-
-  while (*str) {
-    hash = hash * 31 + *str++;
-  }
-  return hash;
-}
-
-static inline int
-xh_str_equal(xh_key_t key1, xh_key_t key2)
-{
-  return strcmp((const char *)key1, (const char *)key2) == 0;
-}
-
-static inline int
-xh_ptr_hash(xh_key_t key)
-{
-  return (int)key;
-}
-
-static inline int
-xh_ptr_equal(xh_key_t key1, xh_key_t key2)
-{
-  return key1 == key2;
-}
-
-static inline int
-xh_int_hash(xh_key_t key)
-{
-  return (int)key;
-}
-
-static inline int
-xh_int_equal(xh_key_t key1, xh_key_t key2)
-{
-  return key1 == key2;
-}
 
 /** iteration */
 
