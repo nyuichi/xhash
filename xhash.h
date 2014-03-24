@@ -55,7 +55,6 @@ typedef struct xh_iter {
 
 static inline void xh_begin(xh_iter *it, xhash *x);
 static inline int xh_next(xh_iter *it);
-static inline void xh_end(xh_iter *it);
 
 static inline void
 xh_bucket_realloc(xhash *x, size_t newsize)
@@ -111,7 +110,6 @@ xh_resize(xhash *x, size_t newsize)
     y.buckets[idx] = it.e;
     y.count++;
   }
-  xh_end(&it);
 
   free(x->buckets);
 
@@ -272,13 +270,6 @@ xh_next(xh_iter *it)
   it->next = it->x->buckets[bidx];
   it->bidx = bidx;
   return 1;
-}
-
-static inline void
-xh_end(xh_iter *it)
-{
-  (void)it;
-  return;                       /* do nothing */
 }
 
 #if defined(__cplusplus)

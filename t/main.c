@@ -20,7 +20,6 @@ test_iteration(int ec)
   while (xh_next(&it)) {
     ++c;
   }
-  xh_end(&it);
 
   assert(c == ec);
 }
