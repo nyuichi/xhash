@@ -51,11 +51,6 @@ static inline void xh_del(xhash *x, xh_key_t key);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
 
-static int xh_str_hash(xh_key_t key);
-static int xh_str_equal(xh_key_t key1, xh_key_t key2);
-static int xh_ptr_hash(xh_key_t key);
-static int xh_ptr_equal(xh_key_t key1, xh_key_t key2);
-
 typedef struct xh_iter {
   xhash *x;
   xh_entry *e, *next;
@@ -64,6 +59,13 @@ typedef struct xh_iter {
 
 static inline void xh_begin(xh_iter *it, xhash *x);
 static inline int xh_next(xh_iter *it);
+
+static int xh_str_hash(xh_key_t key);
+static int xh_str_equal(xh_key_t key1, xh_key_t key2);
+static int xh_ptr_hash(xh_key_t key);
+static int xh_ptr_equal(xh_key_t key1, xh_key_t key2);
+static int xh_int_hash(xh_key_t key); /* applicable for any width integer type */
+static int xh_int_equal(xh_key_t key1, xh_key_t key2);
 
 static inline void
 xh_bucket_realloc(xhash *x, size_t newsize)
@@ -237,6 +239,18 @@ xh_ptr_hash(xh_key_t key)
 
 static inline int
 xh_ptr_equal(xh_key_t key1, xh_key_t key2)
+{
+  return key1 == key2;
+}
+
+static inline int
+xh_int_hash(xh_key_t key)
+{
+  return (int)key;
+}
+
+static inline int
+xh_int_equal(xh_key_t key1, xh_key_t key2)
 {
   return key1 == key2;
 }

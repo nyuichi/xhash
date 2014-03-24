@@ -10,7 +10,7 @@ test_iteration(int ec)
   xh_iter it;
   int i, c = 0;
 
-  xh_init(&x, sizeof(int), xh_ptr_hash, xh_ptr_equal);
+  xh_init(&x, sizeof(int), xh_int_hash, xh_int_equal);
 
   for (i = 0; i < ec; ++i) {
     xh_put(&x, i, &i);
@@ -30,7 +30,7 @@ test_resize(size_t c)
   xhash x;
   size_t i;
 
-  xh_init(&x, sizeof(int), xh_ptr_hash, xh_ptr_equal);
+  xh_init(&x, sizeof(int), xh_int_hash, xh_int_equal);
 
   for (i = 0; i < c; ++i) {
     xh_put(&x, i, &i);
