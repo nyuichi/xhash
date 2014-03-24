@@ -35,7 +35,7 @@ typedef struct xhash {
   xh_equalf equalf;
 } xhash;
 
-static inline void xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf, size_t size);
+static inline void xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf);
 static inline xh_entry *xh_get(xhash *x, const void *key);
 static inline xh_entry *xh_put(xhash *x, const void *key, long val);
 static inline void xh_del(xhash *x, const void *key);
@@ -58,13 +58,23 @@ static inline int xh_next(xh_iter *it);
 static inline void xh_end(xh_iter *it);
 
 static inline void
-xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf, size_t size)
+xh_bucket_realloc(xhash *x, size_t newsize)
 {
-  x->size = size;
-  x->buckets = (xh_entry **)calloc(x->size + 1, sizeof(xh_entry *));
+  x->size = newsize;
+  x->buckets = realloc(x->buckets, (x->size + 1) * sizeof(xh_entry *));
+  memset(x->buckets, 0, (x->size + 1) * sizeof(xh_entry *));
+}
+
+static inline void
+xh_init(xhash *x, xh_hashf hashf, xh_equalf equalf)
+{
+  x->size = 0;
+  x->buckets = NULL;
   x->count = 0;
   x->hashf = hashf;
   x->equalf = equalf;
+
+  xh_bucket_realloc(x, XHASH_INIT_SIZE);
 }
 
 static inline xh_entry *
@@ -90,7 +100,8 @@ xh_resize(xhash *x, size_t newsize)
   xh_iter it;
   size_t idx;
 
-  xh_init(&y, x->hashf, x->equalf, newsize);
+  xh_init(&y, x->hashf, x->equalf);
+  xh_bucket_realloc(&y, newsize);
 
   xh_begin(&it, x);
   while (xh_next(&it)) {
