@@ -13,7 +13,7 @@ test_iteration(int ec)
   xh_init(&x, sizeof(int), xh_ptr_hash, xh_ptr_equal);
 
   for (i = 0; i < ec; ++i) {
-    xh_put(&x, (void *)(long)i, &i);
+    xh_put(&x, i, &i);
   }
 
   xh_begin(&it, &x);
@@ -33,7 +33,7 @@ test_resize(size_t c)
   xh_init(&x, sizeof(int), xh_ptr_hash, xh_ptr_equal);
 
   for (i = 0; i < c; ++i) {
-    xh_put(&x, (void *)(long)i, &i);
+    xh_put(&x, i, &i);
   }
 
   assert(x.count == c);
