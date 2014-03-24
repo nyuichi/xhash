@@ -28,6 +28,9 @@ typedef struct xh_entry {
   char val[];
 } xh_entry;
 
+#define xh_key(e,type) ((type)(e))
+#define xh_val(e,type) (*(type *)((e)->val))
+
 typedef int (*xh_hashf)(const void *);
 typedef int (*xh_equalf)(const void *, const void *);
 

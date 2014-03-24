@@ -54,11 +54,11 @@ test()
   xh_put(&x, "c", &three);
 
   e = xh_get(&x, "a");
-  assert(e && memcmp(e->val, &one, sizeof(int)) == 0);
+  assert(e && xh_val(e, int) == one);
   e = xh_get(&x, "b");
-  assert(e && memcmp(e->val, &two, sizeof(int)) == 0);
+  assert(e && xh_val(e, int) == two);
   e = xh_get(&x, "c");
-  assert(e && memcmp(e->val, &three, sizeof(int)) == 0);
+  assert(e && xh_val(e, int) == three);
 
   xh_destroy(&x);
 }
