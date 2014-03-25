@@ -13,7 +13,7 @@ typedef intmax_t xh_key_t;
 
 typedef struct xh_entry xh_entry;
 
-#define xh_key(e,type) ((type)(e))
+#define xh_key(e,type) ((type)((e)->key))
 #define xh_val(e,type) (*(type *)((e)->val))
 
 typedef int (*xh_hashf)(xh_key_t);
@@ -52,6 +52,7 @@ This software is licensed under the 2-clause BSD license. See LICENSE for detail
 
 # Version
 
+- 2014.03.25 - Version 0.3.4
 - 2014.03.24 - Version 0.3.3
 - 2014.03.20 - Version 0.3
 
