@@ -26,7 +26,7 @@ typedef intmax_t xh_key_t;
 
 typedef struct xh_entry xh_entry;
 
-#define xh_key(e,type) ((type)(e))
+#define xh_key(e,type) ((type)((e)->key))
 #define xh_val(e,type) (*(type *)((e)->val))
 
 typedef int (*xh_hashf)(xh_key_t);
