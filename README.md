@@ -25,6 +25,7 @@ This software is licensed under the 2-clause BSD license. See LICENSE for detail
 
 # Version
 
+- 2014.06.14 - Version 0.4
 - 2014.03.25 - Version 0.3.4
 - 2014.03.24 - Version 0.3.3
 - 2014.03.20 - Version 0.3
