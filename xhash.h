@@ -22,7 +22,12 @@ extern "C" {
 #define XHASH_INIT_SIZE 11
 #define XHASH_RESIZE_RATIO 0.75
 
-typedef struct xh_entry xh_entry;
+typedef struct xh_entry {
+  struct xh_entry *next;
+  int hash;
+  const void *key;
+  char val[];
+} xh_entry;
 
 #define xh_key(e,type) ((type)((e)->key))
 #define xh_val(e,type) (*(type *)((e)->val))
@@ -60,13 +65,6 @@ static inline void xh_begin(xh_iter *it, xhash *x);
 static inline int xh_next(xh_iter *it);
 
 /* implementations below */
-
-struct xh_entry {
-  struct xh_entry *next;
-  int hash;
-  const void *key;
-  char val[];
-};
 
 static inline void
 xh_bucket_realloc(xhash *x, size_t newsize)
