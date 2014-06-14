@@ -64,7 +64,6 @@ typedef struct xh_iter {
 static inline void xh_begin(xh_iter *it, xhash *x);
 static inline int xh_next(xh_iter *it);
 
-/* implementations below */
 
 static inline void
 xh_bucket_realloc(xhash *x, size_t newsize)
