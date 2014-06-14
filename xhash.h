@@ -113,7 +113,7 @@ xh_init_str(xhash *x, size_t width)
 static inline int
 xh_ptr_hash(const void *key)
 {
-  return (int)key;
+  return (int)(intmax_t)key;
 }
 
 static inline int
@@ -131,7 +131,7 @@ xh_init_ptr(xhash *x, size_t width)
 static inline int
 xh_int_hash(const void *key)
 {
-  return (int)key;
+  return (int)(intmax_t)key;
 }
 
 static inline int
