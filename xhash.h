@@ -2,7 +2,7 @@
 #define XHASH_H__
 
 /*
- * Copyright (c) 2013 by Yuichi Nishiwaki <yuichi.nishiwaki@gmail.com>
+ * Copyright (c) 2013-2014 by Yuichi Nishiwaki <yuichi.nishiwaki@gmail.com>
  */
 
 #if defined(__cplusplus)
