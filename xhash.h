@@ -54,6 +54,7 @@ static inline void xh_destroy(xhash *x);
 
 static inline xh_entry *xh_get_int(xhash *x, int key);
 static inline xh_entry *xh_put_int(xhash *x, int key, void *val);
+static inline void xh_del_int(xhash *x, int key);
 
 typedef struct xh_iter {
   xhash *x;
@@ -255,6 +256,12 @@ xh_del(xhash *x, const void *key)
   }
 
   x->count--;
+}
+
+static inline void
+xh_del_int(xhash *x, int key)
+{
+  return xh_del(x, (void *)(intmax_t)key);
 }
 
 static inline void
