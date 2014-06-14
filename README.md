@@ -9,15 +9,13 @@
 #define XHASH_INIT_SIZE 11
 #define XHASH_RESIZE_RATIO 0.75
 
-typedef intmax_t xh_key_t;
-
 typedef struct xh_entry xh_entry;
 
 #define xh_key(e,type) ((type)((e)->key))
 #define xh_val(e,type) (*(type *)((e)->val))
 
-typedef int (*xh_hashf)(xh_key_t);
-typedef int (*xh_equalf)(xh_key_t, xh_key_t);
+typedef int (*xh_hashf)(const void *);
+typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
   xh_entry **buckets;
@@ -29,12 +27,15 @@ typedef struct xhash {
 static inline void xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf);
 static inline void xh_init_str(xhash *x, size_t width);
 static inline void xh_init_ptr(xhash *x, size_t width);
-static inline void xh_init_int(xhash *x, size_t width); /* applicable to integer of any width */
-#define xh_get(x, /* void* or int */key) xh_get_((x), (xh_key_t)(key))
-#define xh_put(x, /* void* or int */key, val) xh_put_((x), (xh_key_t)(key), val)
-static inline void xh_del(xhash *x, xh_key_t key);
+static inline void xh_init_int(xhash *x, size_t width);
+static inline xh_entry *xh_get(xhash *x, const void *key);
+static inline xh_entry *xh_put(xhash *x, const void *key, void *val);
+static inline void xh_del(xhash *x, const void *key);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
+
+static inline xh_entry *xh_get_int(xhash *x, int key);
+static inline xh_entry *xh_put_int(xhash *x, int key, void *val);
 
 typedef struct xh_iter {
   xhash *x;

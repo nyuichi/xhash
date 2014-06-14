@@ -17,20 +17,18 @@ extern "C" {
 
 /* simple object to object hash table */
 
-/* xhash is potentially a weak map; it does not retain the ownership of keys */
+/* xhash is potentially a weak map; it does not retain ownership of keys */
 
 #define XHASH_INIT_SIZE 11
 #define XHASH_RESIZE_RATIO 0.75
-
-typedef intmax_t xh_key_t;
 
 typedef struct xh_entry xh_entry;
 
 #define xh_key(e,type) ((type)((e)->key))
 #define xh_val(e,type) (*(type *)((e)->val))
 
-typedef int (*xh_hashf)(xh_key_t);
-typedef int (*xh_equalf)(xh_key_t, xh_key_t);
+typedef int (*xh_hashf)(const void *);
+typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
   xh_entry **buckets;
@@ -42,12 +40,15 @@ typedef struct xhash {
 static inline void xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf);
 static inline void xh_init_str(xhash *x, size_t width);
 static inline void xh_init_ptr(xhash *x, size_t width);
-static inline void xh_init_int(xhash *x, size_t width); /* applicable to integer of any width */
-#define xh_get(x, /* void* or int */key) xh_get_((x), (xh_key_t)(key))
-#define xh_put(x, /* void* or int */key, val) xh_put_((x), (xh_key_t)(key), val)
-static inline void xh_del(xhash *x, xh_key_t key);
+static inline void xh_init_int(xhash *x, size_t width);
+static inline xh_entry *xh_get(xhash *x, const void *key);
+static inline xh_entry *xh_put(xhash *x, const void *key, void *val);
+static inline void xh_del(xhash *x, const void *key);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
+
+static inline xh_entry *xh_get_int(xhash *x, int key);
+static inline xh_entry *xh_put_int(xhash *x, int key, void *val);
 
 typedef struct xh_iter {
   xhash *x;
@@ -63,7 +64,7 @@ static inline int xh_next(xh_iter *it);
 struct xh_entry {
   struct xh_entry *next;
   int hash;
-  xh_key_t key;                 /* void* or any immediate integer type */
+  const void *key;
   char val[];
 };
 
@@ -89,9 +90,9 @@ xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf)
 }
 
 static inline int
-xh_str_hash(xh_key_t key)
+xh_str_hash(const void *key)
 {
-  const char *str = (const char *)key;
+  const char *str = key;
   int hash = 0;
 
   while (*str) {
@@ -101,9 +102,9 @@ xh_str_hash(xh_key_t key)
 }
 
 static inline int
-xh_str_equal(xh_key_t key1, xh_key_t key2)
+xh_str_equal(const void *key1, const void *key2)
 {
-  return strcmp((const char *)key1, (const char *)key2) == 0;
+  return strcmp(key1, key2) == 0;
 }
 
 static inline void
@@ -113,13 +114,13 @@ xh_init_str(xhash *x, size_t width)
 }
 
 static inline int
-xh_ptr_hash(xh_key_t key)
+xh_ptr_hash(const void *key)
 {
   return (int)key;
 }
 
 static inline int
-xh_ptr_equal(xh_key_t key1, xh_key_t key2)
+xh_ptr_equal(const void *key1, const void *key2)
 {
   return key1 == key2;
 }
@@ -131,13 +132,13 @@ xh_init_ptr(xhash *x, size_t width)
 }
 
 static inline int
-xh_int_hash(xh_key_t key)
+xh_int_hash(const void *key)
 {
   return (int)key;
 }
 
 static inline int
-xh_int_equal(xh_key_t key1, xh_key_t key2)
+xh_int_equal(const void *key1, const void *key2)
 {
   return key1 == key2;
 }
@@ -145,11 +146,13 @@ xh_int_equal(xh_key_t key1, xh_key_t key2)
 static inline void
 xh_init_int(xhash *x, size_t width)
 {
+  assert(sizeof(void *) >= sizeof(int));
+
   xh_init(x, width, xh_int_hash, xh_int_equal);
 }
 
 static inline xh_entry *
-xh_get_(xhash *x, xh_key_t key)
+xh_get(xhash *x, const void *key)
 {
   int hash;
   size_t idx;
@@ -162,6 +165,12 @@ xh_get_(xhash *x, xh_key_t key)
       break;
   }
   return e;
+}
+
+static inline xh_entry *
+xh_get_int(xhash *x, int key)
+{
+  return xh_get(x, (void *)(intmax_t)key);
 }
 
 static inline void
@@ -190,13 +199,13 @@ xh_resize(xhash *x, size_t newsize)
 }
 
 static inline xh_entry *
-xh_put_(xhash *x, xh_key_t key, void *val)
+xh_put(xhash *x, const void *key, void *val)
 {
   int hash;
   size_t idx;
   xh_entry *e;
 
-  if ((e = xh_get_(x, key))) {
+  if ((e = xh_get(x, key))) {
     memcpy(e->val, val, x->width);
     return e;
   }
@@ -218,8 +227,14 @@ xh_put_(xhash *x, xh_key_t key, void *val)
   return x->buckets[idx] = e;
 }
 
+static inline xh_entry *
+xh_put_int(xhash *x, int key, void *val)
+{
+  return xh_put(x, (void *)(intmax_t)key, val);
+}
+
 static inline void
-xh_del(xhash *x, xh_key_t key)
+xh_del(xhash *x, const void *key)
 {
   int hash;
   size_t idx;

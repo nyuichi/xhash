@@ -13,7 +13,7 @@ test_iteration(int ec)
   xh_init_int(&x, sizeof(int));
 
   for (i = 0; i < ec; ++i) {
-    xh_put(&x, i, &i);
+    xh_put_int(&x, i, &i);
   }
 
   xh_begin(&it, &x);
@@ -33,7 +33,7 @@ test_resize(size_t c)
   xh_init_int(&x, sizeof(int));
 
   for (i = 0; i < c; ++i) {
-    xh_put(&x, i, &i);
+    xh_put_int(&x, i, &i);
   }
 
   assert(x.count == c);
