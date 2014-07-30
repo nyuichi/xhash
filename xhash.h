@@ -23,8 +23,9 @@ extern "C" {
 typedef struct xh_entry {
   struct xh_entry *next;
   int hash;
-  const void *key;
-  char val[];
+  const char *key;
+  char *val;
+  char chunk[];
 } xh_entry;
 
 #define xh_key(e,type) ((type)((e)->key))
@@ -35,12 +36,12 @@ typedef int (*xh_equalf)(const void *, const void *);
 
 typedef struct xhash {
   xh_entry **buckets;
-  size_t size, count, width;
+  size_t size, count, kwidth, vwidth;
   xh_hashf hashf;
   xh_equalf equalf;
 } xhash;
 
-static inline void xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf);
+static inline void xh_init(xhash *x, size_t, size_t, xh_hashf, xh_equalf);
 static inline void xh_init_str(xhash *x, size_t width);
 static inline void xh_init_ptr(xhash *x, size_t width);
 static inline void xh_init_int(xhash *x, size_t width);
@@ -73,12 +74,13 @@ xh_bucket_realloc(xhash *x, size_t newsize)
 }
 
 static inline void
-xh_init(xhash *x, size_t width, xh_hashf hashf, xh_equalf equalf)
+xh_init(xhash *x, size_t kwidth, size_t vwidth, xh_hashf hashf, xh_equalf equalf)
 {
   x->size = 0;
   x->buckets = NULL;
   x->count = 0;
-  x->width = width;
+  x->kwidth = kwidth;
+  x->vwidth = vwidth;
   x->hashf = hashf;
   x->equalf = equalf;
 
@@ -106,7 +108,7 @@ xh_str_equal(const void *key1, const void *key2)
 static inline void
 xh_init_str(xhash *x, size_t width)
 {
-  xh_init(x, width, xh_str_hash, xh_str_equal);
+  xh_init(x, sizeof(const char *), width, xh_str_hash, xh_str_equal);
 }
 
 static inline int
@@ -124,27 +126,25 @@ xh_ptr_equal(const void *key1, const void *key2)
 static inline void
 xh_init_ptr(xhash *x, size_t width)
 {
-  xh_init(x, width, xh_ptr_hash, xh_ptr_equal);
+  xh_init(x, sizeof(const void *), width, xh_ptr_hash, xh_ptr_equal);
 }
 
 static inline int
 xh_int_hash(const void *key)
 {
-  return (int)(intmax_t)key;
+  return *(const int *)key;
 }
 
 static inline int
 xh_int_equal(const void *key1, const void *key2)
 {
-  return key1 == key2;
+  return *(const int *)key1 == *(const int *)key2;
 }
 
 static inline void
 xh_init_int(xhash *x, size_t width)
 {
-  assert(sizeof(void *) >= sizeof(int));
-
-  xh_init(x, width, xh_int_hash, xh_int_equal);
+  xh_init(x, sizeof(int), width, xh_int_hash, xh_int_equal);
 }
 
 static inline xh_entry *
@@ -166,7 +166,7 @@ xh_get(xhash *x, const void *key)
 static inline xh_entry *
 xh_get_int(xhash *x, int key)
 {
-  return xh_get(x, (void *)(intmax_t)key);
+  return xh_get(x, &key);
 }
 
 static inline void
@@ -176,7 +176,7 @@ xh_resize(xhash *x, size_t newsize)
   xh_iter it;
   size_t idx;
 
-  xh_init(&y, x->width, x->hashf, x->equalf);
+  xh_init(&y, x->kwidth, x->vwidth, x->hashf, x->equalf);
   xh_bucket_realloc(&y, newsize);
 
   xh_begin(&it, x);
@@ -202,7 +202,7 @@ xh_put(xhash *x, const void *key, void *val)
   xh_entry *e;
 
   if ((e = xh_get(x, key))) {
-    memcpy(e->val, val, x->width);
+    memcpy(e->val, val, x->vwidth);
     return e;
   }
 
@@ -212,11 +212,13 @@ xh_put(xhash *x, const void *key, void *val)
 
   hash = x->hashf(key);
   idx = ((unsigned)hash) % x->size;
-  e = (xh_entry *)malloc(offsetof(xh_entry, val) + x->width);
+  e = (xh_entry *)malloc(offsetof(xh_entry, chunk) + x->kwidth + x->kwidth);
   e->next = x->buckets[idx];
   e->hash = hash;
-  e->key = key;
-  memcpy(e->val, val, x->width);
+  e->key = e->chunk;
+  e->val = e->chunk + x->kwidth;
+  memcpy((void *)e->key, key, x->kwidth);
+  memcpy(e->val, val, x->vwidth);
 
   x->count++;
 
@@ -226,7 +228,7 @@ xh_put(xhash *x, const void *key, void *val)
 static inline xh_entry *
 xh_put_int(xhash *x, int key, void *val)
 {
-  return xh_put(x, (void *)(intmax_t)key, val);
+  return xh_put(x, &key, val);
 }
 
 static inline void
@@ -259,7 +261,7 @@ xh_del(xhash *x, const void *key)
 static inline void
 xh_del_int(xhash *x, int key)
 {
-  xh_del(x, (void *)(intmax_t)key);
+  xh_del(x, &key);
 }
 
 static inline void
