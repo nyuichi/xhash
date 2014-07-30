@@ -20,12 +20,15 @@ extern "C" {
 #define XHASH_INIT_SIZE 11
 #define XHASH_RESIZE_RATIO 0.75
 
+#define XHASH_ALIGNMENT 3       /* quad word alignment */
+#define XHASH_MASK (~((1 << XHASH_ALIGNMENT) - 1))
+#define XHASH_ALIGN(i) ((((i) - 1) & XHASH_MASK) + (1 << XHASH_ALIGNMENT))
+
 typedef struct xh_entry {
   struct xh_entry *next;
   int hash;
-  const char *key;
-  char *val;
-  char chunk[];
+  const char *key;              /* == val + XHASH_ALIGN(vwidth) */
+  char val[];
 } xh_entry;
 
 #define xh_key(e,type) ((type)((e)->key))
@@ -212,11 +215,10 @@ xh_put(xhash *x, const void *key, void *val)
 
   hash = x->hashf(key);
   idx = ((unsigned)hash) % x->size;
-  e = (xh_entry *)malloc(offsetof(xh_entry, chunk) + x->kwidth + x->kwidth);
+  e = (xh_entry *)malloc(offsetof(xh_entry, val) + XHASH_ALIGN(x->vwidth) + x->kwidth);
   e->next = x->buckets[idx];
   e->hash = hash;
-  e->key = e->chunk;
-  e->val = e->chunk + x->kwidth;
+  e->key = e->val + XHASH_ALIGN(x->vwidth);
   memcpy((void *)e->key, key, x->kwidth);
   memcpy(e->val, val, x->vwidth);
 
