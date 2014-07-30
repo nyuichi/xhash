@@ -44,18 +44,29 @@ typedef struct xhash {
   xh_equalf equalf;
 } xhash;
 
-static inline void xh_init(xhash *x, size_t, size_t, xh_hashf, xh_equalf);
-static inline void xh_init_str(xhash *x, size_t width);
-static inline void xh_init_ptr(xhash *x, size_t width);
-static inline void xh_init_int(xhash *x, size_t width);
-static inline xh_entry *xh_get(xhash *x, const void *key);
-static inline xh_entry *xh_put(xhash *x, const void *key, void *val);
-static inline void xh_del(xhash *x, const void *key);
+static inline void xh_init_(xhash *x, size_t, size_t, xh_hashf, xh_equalf);
+static inline xh_entry *xh_get_(xhash *x, const void *key);
+static inline xh_entry *xh_put_(xhash *x, const void *key, void *val);
+static inline void xh_del_(xhash *x, const void *key);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
 
+/* string map */
+static inline void xh_init_str(xhash *x, size_t width);
+static inline xh_entry *xh_get_str(xhash *x, const char *key);
+static inline xh_entry *xh_put_str(xhash *x, const char *key, void *);
+static inline void xh_del_str(xhash *x, const char *key);
+
+/* object map */
+static inline void xh_init_ptr(xhash *x, size_t width);
+static inline xh_entry *xh_get_ptr(xhash *x, const void *key);
+static inline xh_entry *xh_put_ptr(xhash *x, const void *key, void *);
+static inline void xh_del_ptr(xhash *x, const void *key);
+
+/* int map */
+static inline void xh_init_int(xhash *x, size_t width);
 static inline xh_entry *xh_get_int(xhash *x, int key);
-static inline xh_entry *xh_put_int(xhash *x, int key, void *val);
+static inline xh_entry *xh_put_int(xhash *x, int key, void *);
 static inline void xh_del_int(xhash *x, int key);
 
 typedef struct xh_iter {
@@ -77,7 +88,7 @@ xh_bucket_realloc(xhash *x, size_t newsize)
 }
 
 static inline void
-xh_init(xhash *x, size_t kwidth, size_t vwidth, xh_hashf hashf, xh_equalf equalf)
+xh_init_(xhash *x, size_t kwidth, size_t vwidth, xh_hashf hashf, xh_equalf equalf)
 {
   x->size = 0;
   x->buckets = NULL;
@@ -90,68 +101,8 @@ xh_init(xhash *x, size_t kwidth, size_t vwidth, xh_hashf hashf, xh_equalf equalf
   xh_bucket_realloc(x, XHASH_INIT_SIZE);
 }
 
-static inline int
-xh_str_hash(const void *key)
-{
-  const char *str = key;
-  int hash = 0;
-
-  while (*str) {
-    hash = hash * 31 + *str++;
-  }
-  return hash;
-}
-
-static inline int
-xh_str_equal(const void *key1, const void *key2)
-{
-  return strcmp(key1, key2) == 0;
-}
-
-static inline void
-xh_init_str(xhash *x, size_t width)
-{
-  xh_init(x, sizeof(const char *), width, xh_str_hash, xh_str_equal);
-}
-
-static inline int
-xh_ptr_hash(const void *key)
-{
-  return (int)(intmax_t)key;
-}
-
-static inline int
-xh_ptr_equal(const void *key1, const void *key2)
-{
-  return key1 == key2;
-}
-
-static inline void
-xh_init_ptr(xhash *x, size_t width)
-{
-  xh_init(x, sizeof(const void *), width, xh_ptr_hash, xh_ptr_equal);
-}
-
-static inline int
-xh_int_hash(const void *key)
-{
-  return *(const int *)key;
-}
-
-static inline int
-xh_int_equal(const void *key1, const void *key2)
-{
-  return *(const int *)key1 == *(const int *)key2;
-}
-
-static inline void
-xh_init_int(xhash *x, size_t width)
-{
-  xh_init(x, sizeof(int), width, xh_int_hash, xh_int_equal);
-}
-
 static inline xh_entry *
-xh_get(xhash *x, const void *key)
+xh_get_(xhash *x, const void *key)
 {
   int hash;
   size_t idx;
@@ -166,20 +117,14 @@ xh_get(xhash *x, const void *key)
   return e;
 }
 
-static inline xh_entry *
-xh_get_int(xhash *x, int key)
-{
-  return xh_get(x, &key);
-}
-
 static inline void
-xh_resize(xhash *x, size_t newsize)
+xh_resize_(xhash *x, size_t newsize)
 {
   xhash y;
   xh_iter it;
   size_t idx;
 
-  xh_init(&y, x->kwidth, x->vwidth, x->hashf, x->equalf);
+  xh_init_(&y, x->kwidth, x->vwidth, x->hashf, x->equalf);
   xh_bucket_realloc(&y, newsize);
 
   xh_begin(&it, x);
@@ -198,19 +143,19 @@ xh_resize(xhash *x, size_t newsize)
 }
 
 static inline xh_entry *
-xh_put(xhash *x, const void *key, void *val)
+xh_put_(xhash *x, const void *key, void *val)
 {
   int hash;
   size_t idx;
   xh_entry *e;
 
-  if ((e = xh_get(x, key))) {
+  if ((e = xh_get_(x, key))) {
     memcpy(e->val, val, x->vwidth);
     return e;
   }
 
   if (x->count + 1 > x->size * XHASH_RESIZE_RATIO) {
-    xh_resize(x, x->size * 2 + 1);
+    xh_resize_(x, x->size * 2 + 1);
   }
 
   hash = x->hashf(key);
@@ -227,14 +172,8 @@ xh_put(xhash *x, const void *key, void *val)
   return x->buckets[idx] = e;
 }
 
-static inline xh_entry *
-xh_put_int(xhash *x, int key, void *val)
-{
-  return xh_put(x, &key, val);
-}
-
 static inline void
-xh_del(xhash *x, const void *key)
+xh_del_(xhash *x, const void *key)
 {
   int hash;
   size_t idx;
@@ -261,12 +200,6 @@ xh_del(xhash *x, const void *key)
 }
 
 static inline void
-xh_del_int(xhash *x, int key)
-{
-  xh_del(x, &key);
-}
-
-static inline void
 xh_clear(xhash *x)
 {
   size_t i;
@@ -290,6 +223,126 @@ xh_destroy(xhash *x)
 {
   xh_clear(x);
   free(x->buckets);
+}
+
+/* string map */
+
+static inline int
+xh_str_hash(const void *key)
+{
+  const char *str = *(const char **)key;
+  int hash = 0;
+
+  while (*str) {
+    hash = hash * 31 + *str++;
+  }
+  return hash;
+}
+
+static inline int
+xh_str_equal(const void *key1, const void *key2)
+{
+  return strcmp(*(const char **)key1, *(const char **)key2) == 0;
+}
+
+static inline void
+xh_init_str(xhash *x, size_t width)
+{
+  xh_init_(x, sizeof(const char *), width, xh_str_hash, xh_str_equal);
+}
+
+static inline xh_entry *
+xh_get_str(xhash *x, const char *key)
+{
+  return xh_get_(x, &key);
+}
+
+static inline xh_entry *
+xh_put_str(xhash *x, const char *key, void *val)
+{
+  return xh_put_(x, &key, val);
+}
+
+static inline void
+xh_del_str(xhash *x, const char *key)
+{
+  xh_del_(x, &key);
+}
+
+/* object map */
+
+static inline int
+xh_ptr_hash(const void *key)
+{
+  return (int)*(const void **)key;
+}
+
+static inline int
+xh_ptr_equal(const void *key1, const void *key2)
+{
+  return *(const void **)key1 == *(const void **)key2;
+}
+
+static inline void
+xh_init_ptr(xhash *x, size_t width)
+{
+  xh_init_(x, sizeof(const void *), width, xh_ptr_hash, xh_ptr_equal);
+}
+
+static inline xh_entry *
+xh_get_ptr(xhash *x, const void *key)
+{
+  return xh_get_(x, &key);
+}
+
+static inline xh_entry *
+xh_put_ptr(xhash *x, const void *key, void *val)
+{
+  return xh_put_(x, &key, val);
+}
+
+static inline void
+xh_del_ptr(xhash *x, const void *key)
+{
+  xh_del_(x, &key);
+}
+
+/* int map */
+
+static inline int
+xh_int_hash(const void *key)
+{
+  return *(const int *)key;
+}
+
+static inline int
+xh_int_equal(const void *key1, const void *key2)
+{
+  return *(const int *)key1 == *(const int *)key2;
+}
+
+static inline void
+xh_init_int(xhash *x, size_t width)
+{
+  xh_init_(x, sizeof(int), width, xh_int_hash, xh_int_equal);
+}
+
+static inline xh_entry *
+xh_get_int(xhash *x, int key)
+{
+  return xh_get_(x, &key);
+}
+
+static inline xh_entry *
+xh_put_int(xhash *x, int key, void *val)
+{
+  return xh_put_(x, &key, val);
+}
+
+static inline void
+xh_del_int(xhash *x, int key)
+{
+  xh_del_(x, &key);
 }
 
 /** iteration */

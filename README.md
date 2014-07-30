@@ -10,11 +10,11 @@ xhash x;
 
 xh_init_str(&x, sizeof(mystruct));
 
-xh_put(&x, "aaa", mystructA);
-xh_put(&x, "bbb", mystructB);
-xh_put(&x, "ccc", mystructC);
+xh_put_str(&x, "aaa", mystructA);
+xh_put_str(&x, "bbb", mystructB);
+xh_put_str(&x, "ccc", mystructC);
 
-xh_val(xh_get(&x, "aaa")) == mystructA;
+xh_val(xh_get(&x, "aaa"), mystruct) == mystructA;
 
 xh_destroy(&x);
 ```

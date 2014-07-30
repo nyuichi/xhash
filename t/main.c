@@ -49,15 +49,15 @@ test()
 
   xh_init_str(&x, sizeof(int));
 
-  xh_put(&x, "a", &one);
-  xh_put(&x, "b", &two);
-  xh_put(&x, "c", &three);
+  xh_put_str(&x, "aaaaa", &one);
+  xh_put_str(&x, "bbbbb", &two);
+  xh_put_str(&x, "aaaab", &three);
 
-  e = xh_get(&x, "a");
+  e = xh_get_str(&x, "aaaaa");
   assert(e && xh_val(e, int) == one);
-  e = xh_get(&x, "b");
+  e = xh_get_str(&x, "bbbbb");
   assert(e && xh_val(e, int) == two);
-  e = xh_get(&x, "c");
+  e = xh_get_str(&x, "aaaab");
   assert(e && xh_val(e, int) == three);
 
   xh_destroy(&x);
