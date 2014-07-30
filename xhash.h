@@ -17,8 +17,6 @@ extern "C" {
 
 /* simple object to object hash table */
 
-/* xhash is potentially a weak map; it does not retain ownership of keys */
-
 #define XHASH_INIT_SIZE 11
 #define XHASH_RESIZE_RATIO 0.75
 
@@ -261,7 +259,7 @@ xh_del(xhash *x, const void *key)
 static inline void
 xh_del_int(xhash *x, int key)
 {
-  return xh_del(x, (void *)(intmax_t)key);
+  xh_del(x, (void *)(intmax_t)key);
 }
 
 static inline void
@@ -289,8 +287,6 @@ xh_destroy(xhash *x)
   xh_clear(x);
   free(x->buckets);
 }
-
-/** type specific */
 
 /** iteration */
 
