@@ -274,7 +274,7 @@ xh_del_str(xhash *x, const char *key)
 static inline int
 xh_ptr_hash(const void *key)
 {
-  return (int)*(const void **)key;
+  return (size_t)*(const void **)key;
 }
 
 static inline int
