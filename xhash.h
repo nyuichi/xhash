@@ -312,13 +312,13 @@ xh_del_ptr(xhash *x, const void *key)
 static inline int
 xh_int_hash(const void *key)
 {
-  return *(const int *)key;
+  return *(int *)key;
 }
 
 static inline int
 xh_int_equal(const void *key1, const void *key2)
 {
-  return *(const int *)key1 == *(const int *)key2;
+  return *(int *)key1 == *(int *)key2;
 }
 
 static inline void
