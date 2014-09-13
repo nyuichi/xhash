@@ -45,7 +45,7 @@ typedef struct xhash {
   void *data;
 } xhash;
 
-/** Private Methods:
+/** Protected Methods:
  * static inline void xh_init_(xhash *x, size_t, size_t, xh_hashf, xh_equalf, void *);
  * static inline xh_entry *xh_get_(xhash *x, const void *key);
  * static inline xh_entry *xh_put_(xhash *x, const void *key, void *val);
