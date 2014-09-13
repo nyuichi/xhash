@@ -45,12 +45,12 @@ typedef struct xhash {
   void *data;
 } xhash;
 
-static inline void xh_init_(xhash *x, size_t, size_t, xh_hashf, xh_equalf, void *);
-static inline xh_entry *xh_get_(xhash *x, const void *key);
-static inline xh_entry *xh_put_(xhash *x, const void *key, void *val);
-static inline void xh_del_(xhash *x, const void *key);
-static inline void xh_clear(xhash *x);
-static inline void xh_destroy(xhash *x);
+/** Private Methods:
+ * static inline void xh_init_(xhash *x, size_t, size_t, xh_hashf, xh_equalf, void *);
+ * static inline xh_entry *xh_get_(xhash *x, const void *key);
+ * static inline xh_entry *xh_put_(xhash *x, const void *key, void *val);
+ * static inline void xh_del_(xhash *x, const void *key);
+ */
 
 /* string map */
 static inline void xh_init_str(xhash *x, size_t width);
@@ -69,6 +69,10 @@ static inline void xh_init_int(xhash *x, size_t width);
 static inline xh_entry *xh_get_int(xhash *x, int key);
 static inline xh_entry *xh_put_int(xhash *x, int key, void *);
 static inline void xh_del_int(xhash *x, int key);
+
+static inline size_t xh_size(xhash *x);
+static inline void xh_clear(xhash *x);
+static inline void xh_destroy(xhash *x);
 
 typedef struct xh_iter {
   xhash *x;
@@ -199,6 +203,12 @@ xh_del_(xhash *x, const void *key)
   }
 
   x->count--;
+}
+
+static inline size_t
+xh_size(xhash *x)
+{
+  return x->count;
 }
 
 static inline void
