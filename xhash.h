@@ -1,5 +1,5 @@
-#ifndef XHASH_H__
-#define XHASH_H__
+#ifndef XHASH_H
+#define XHASH_H
 
 /*
  * Copyright (c) 2013-2014 by Yuichi Nishiwaki <yuichi.nishiwaki@gmail.com>
