@@ -76,14 +76,8 @@ static inline size_t xh_size(xhash *x);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
 
-typedef struct xh_iter {
-  xhash *x;
-  xh_entry *e, *next;
-  size_t bidx;
-} xh_iter;
-
-static inline void xh_begin(xh_iter *it, xhash *x);
-static inline int xh_next(xh_iter *it);
+static inline xh_entry *xh_begin(xhash *x);
+static inline xh_entry *xh_next(xh_entry *e);
 
 
 static inline void
@@ -130,20 +124,21 @@ static inline void
 xh_resize_(xhash *x, size_t newsize)
 {
   xhash y;
-  xh_iter it;
+  xh_entry *it;
   size_t idx;
 
   xh_init_(&y, x->kwidth, x->vwidth, x->hashf, x->equalf, x->data);
   xh_bucket_realloc(&y, newsize);
 
-  xh_begin(&it, x);
-  while (xh_next(&it)) {
-    idx = ((unsigned)it.e->hash) % y.size;
+  for (it = xh_begin(x); it != NULL; it = xh_next(it)) {
+    idx = ((unsigned)it->hash) % y.size;
     /* reuse entry object */
-    it.e->next = y.buckets[idx];
-    y.buckets[idx] = it.e;
+    it->next = y.buckets[idx];
+    y.buckets[idx] = it;
     y.count++;
   }
+
+  y.chain = x->chain;
 
   free(x->buckets);
 
@@ -403,43 +398,16 @@ xh_del_int(xhash *x, int key)
 
 /** iteration */
 
-static inline void
-xh_begin(xh_iter *it, xhash *x)
+static inline xh_entry *
+xh_begin(xhash *x)
 {
-  size_t bidx;
-
-  it->x = x;
-
-  for (bidx = 0; bidx < x->size; ++bidx) {
-    if (x->buckets[bidx])
-      break;
-  }
-  it->e = NULL;
-  it->next = x->buckets[bidx];
-  it->bidx = bidx;
+  return x->chain;
 }
 
-static inline int
-xh_next(xh_iter *it)
+static inline xh_entry *
+xh_next(xh_entry *e)
 {
-  size_t bidx;
-
-  if (! it->next) {
-    return 0;
-  }
-
-  it->e = it->next;
-  if (it->next->next) {
-    it->next = it->next->next;
-    return 1;
-  }
-  for (bidx = it->bidx + 1; bidx < it->x->size; ++bidx) {
-    if (it->x->buckets[bidx])
-      break;
-  }
-  it->next = it->x->buckets[bidx];
-  it->bidx = bidx;
-  return 1;
+  return e->bw;
 }
 
 #if defined(__cplusplus)
