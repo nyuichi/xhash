@@ -25,6 +25,11 @@ This software is licensed under the 2-clause BSD license. See LICENSE for detail
 
 # Version
 
+- 2014.09.16 - Version 0.5
+
+    The implementation switches to ordered hash map (hash map with doubly-linked list).
+    Accordingly, iteration interface changed.
+
 - 2014.08.01 - Version 0.4.1
 - 2014.06.14 - Version 0.4
 - 2014.03.25 - Version 0.3.4
