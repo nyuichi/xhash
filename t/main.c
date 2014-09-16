@@ -4,6 +4,29 @@
 #include "../xhash.h"
 
 void
+test_copy(int ec)
+{
+  xhash x, y;
+  xh_entry *i, *j;
+  int c = 0;
+
+  xh_init_int(&x, sizeof(int));
+
+  for (int i = 0; i < ec; ++i) {
+    xh_put_int(&x, i, &i);
+  }
+
+  xh_copy(&y, &x);
+
+  for (i = xh_begin(&x), j = xh_begin(&y); i && j; i = xh_next(i), j = xh_next(j)) {
+    assert(xh_val(i, int) == xh_val(j, int));
+    ++c;
+  }
+
+  assert(c == ec);
+}
+
+void
 test_iteration(int ec)
 {
   xhash x;
@@ -72,6 +95,7 @@ main()
   test();
   test_iteration(30);
   test_resize(300);
+  test_copy(30);
 
   puts("---- xhash test successfully finished ----");
 
