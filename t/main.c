@@ -8,12 +8,12 @@ test_copy(int ec)
 {
   xhash x, y;
   xh_entry *i, *j;
-  int c = 0;
+  int k, c = 0;
 
   xh_init_int(&x, sizeof(int));
 
-  for (int i = 0; i < ec; ++i) {
-    xh_put_int(&x, i, &i);
+  for (k = 0; k < ec; ++k) {
+    xh_put_int(&x, k, &k);
   }
 
   xh_copy(&y, &x);
