@@ -191,41 +191,43 @@ xh_del_(xhash *x, const void *key)
 {
   int hash;
   size_t idx;
-  xh_entry *e, *d;
+  xh_entry *p, *q, *r;
 
   hash = x->hashf(key, x->data);
   idx = ((unsigned)hash) % x->size;
   if (x->buckets[idx]->hash == hash && x->equalf(key, x->buckets[idx]->key, x->data)) {
-    e = x->buckets[idx]->next;
-    if (e->fw) {
-      e->fw->bw = e->bw;
+    q = x->buckets[idx];
+    if (q->fw) {
+      q->fw->bw = q->bw;
     }
-    if (e->bw) {
-      e->bw->fw = e->fw;
+    if (q->bw) {
+      q->bw->fw = q->fw;
     }
-    if (x->chain == e) {
-      x->chain = e->bw;
+    if (x->chain == q) {
+      x->chain = q->bw;
     }
-    free(x->buckets[idx]);
-    x->buckets[idx] = e;
+    r = q->next;
+    free(q);
+    x->buckets[idx] = r;
   }
   else {
-    for (e = x->buckets[idx]; ; e = e->next) {
-      if (e->next->hash == hash && x->equalf(key, e->next->key, x->data))
+    for (p = x->buckets[idx]; ; p = p->next) {
+      if (p->next->hash == hash && x->equalf(key, p->next->key, x->data))
         break;
     }
-    d = e->next->next;
-    if (e->next->fw) {
-      e->next->fw->bw = e->next->bw;
+    q = p->next;
+    if (q->fw) {
+      q->fw->bw = q->bw;
     }
-    if (e->next->bw) {
-      e->next->bw->fw = e->next->fw;
+    if (q->bw) {
+      q->bw->fw = q->fw;
     }
-    if (x->chain == e->next) {
-      x->chain = e->next->bw;
+    if (x->chain == q) {
+      x->chain = q->bw;
     }
-    free(e->next);
-    e->next = d;
+    r = q->next;
+    free(q);
+    p->next = r;
   }
 
   x->count--;
