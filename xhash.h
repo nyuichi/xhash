@@ -27,6 +27,7 @@ extern "C" {
 typedef struct xh_entry {
   struct xh_entry *next;
   int hash;
+  struct xh_entry *fw, *bw;
   const char *key;              /* == val + XHASH_ALIGN(vwidth) */
   char val[];
 } xh_entry;
@@ -42,6 +43,7 @@ typedef struct xhash {
   size_t size, count, kwidth, vwidth;
   xh_hashf hashf;
   xh_equalf equalf;
+  xh_entry *chain;
   void *data;
 } xhash;
 
@@ -102,6 +104,7 @@ xh_init_(xhash *x, size_t kwidth, size_t vwidth, xh_hashf hashf, xh_equalf equal
   x->vwidth = vwidth;
   x->hashf = hashf;
   x->equalf = equalf;
+  x->chain = NULL;
   x->data = data;
 
   xh_bucket_realloc(x, XHASH_INIT_SIZE);
@@ -173,6 +176,16 @@ xh_put_(xhash *x, const void *key, void *val)
   memcpy((void *)e->key, key, x->kwidth);
   memcpy(e->val, val, x->vwidth);
 
+  if (x->chain == NULL) {
+    x->chain = e;
+    e->fw = e->bw = NULL;
+  } else {
+    x->chain->fw = e;
+    e->bw = x->chain;
+    e->fw = NULL;
+    x->chain = e;
+  }
+
   x->count++;
 
   return x->buckets[idx] = e;
@@ -189,6 +202,15 @@ xh_del_(xhash *x, const void *key)
   idx = ((unsigned)hash) % x->size;
   if (x->buckets[idx]->hash == hash && x->equalf(key, x->buckets[idx]->key, x->data)) {
     e = x->buckets[idx]->next;
+    if (e->fw) {
+      e->fw->bw = e->bw;
+    }
+    if (e->bw) {
+      e->bw->fw = e->fw;
+    }
+    if (x->chain == e) {
+      x->chain = e->bw;
+    }
     free(x->buckets[idx]);
     x->buckets[idx] = e;
   }
@@ -198,6 +220,15 @@ xh_del_(xhash *x, const void *key)
         break;
     }
     d = e->next->next;
+    if (e->next->fw) {
+      e->next->fw->bw = e->next->bw;
+    }
+    if (e->next->bw) {
+      e->next->bw->fw = e->next->fw;
+    }
+    if (x->chain == e->next) {
+      x->chain = e->next->bw;
+    }
     free(e->next);
     e->next = d;
   }
@@ -227,6 +258,7 @@ xh_clear(xhash *x)
     x->buckets[i] = NULL;
   }
 
+  x->chain = NULL;
   x->count = 0;
 }
 
