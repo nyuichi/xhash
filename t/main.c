@@ -7,7 +7,7 @@ void
 test_iteration(int ec)
 {
   xhash x;
-  xh_iter it;
+  xh_entry *it;
   int i, c = 0;
 
   xh_init_int(&x, sizeof(int));
@@ -16,9 +16,10 @@ test_iteration(int ec)
     xh_put_int(&x, i, &i);
   }
 
-  xh_begin(&it, &x);
-  while (xh_next(&it)) {
+  i = ec;
+  for (it = xh_begin(&x); it != NULL; it = xh_next(it)) {
     ++c;
+    assert(--i == xh_val(it, int));
   }
 
   assert(c == ec);
