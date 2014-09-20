@@ -16,10 +16,10 @@ test_iteration(int ec)
     xh_put_int(&x, i, &i);
   }
 
-  i = ec;
+  i = 0;
   for (it = xh_begin(&x); it != NULL; it = xh_next(it)) {
     ++c;
-    assert(--i == xh_val(it, int));
+    assert(i++ == xh_val(it, int));
   }
 
   assert(c == ec);
