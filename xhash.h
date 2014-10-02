@@ -74,6 +74,7 @@ static inline xh_entry *xh_put_int(xhash *x, int key, void *);
 static inline void xh_del_int(xhash *x, int key);
 
 static inline size_t xh_size(xhash *x);
+static inline void xh_copy(xhash *dst, xhash *src);
 static inline void xh_clear(xhash *x);
 static inline void xh_destroy(xhash *x);
 
@@ -245,6 +246,25 @@ static inline size_t
 xh_size(xhash *x)
 {
   return x->count;
+}
+
+static inline void
+xh_copy(xhash *dst, xhash *src)
+{
+  xh_entry *it;
+
+  /* dst must be uninitialized or destroyed, or it will cause memory leak */
+
+  xh_init_(dst, src->kwidth, src->vwidth, src->hashf, src->equalf, src->data);
+
+  for (it = src->chain; it != NULL; it = it->bw) {
+    if (it->bw == NULL) {
+      break;
+    }
+  }
+  for (; it != NULL; it = it->fw) {
+    xh_put_(dst, it->key, it->val);
+  }
 }
 
 static inline void
